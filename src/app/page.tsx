@@ -1,103 +1,122 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import Header from '@/components/Header';
+import IntakeForm from '@/components/IntakeForm';
+import DiagnosisSection from '@/components/DiagnosisSection';
+import OptionsSection from '@/components/OptionsSection';
+import PackagerSection from '@/components/PackagerSection';
+import DeadlinesSection from '@/components/DeadlinesSection';
+import { FormData, DiagnosisResult } from '@/types';
+import { MOCK_KAHISTORY, MOCK_OCR } from '@/lib/mockData';
+import { daysBetween } from '@/lib/utils';
+import Swal from 'sweetalert2';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [formData, setFormData] = useState<FormData>({
+    vin: '',
+    purchaseDate: '',
+    mileage: 0,
+    channel: '',
+  });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+  const [diagnosisResult, setDiagnosisResult] = useState<DiagnosisResult | null>(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showPackager, setShowPackager] = useState(false);
+  const [showDeadlines, setShowDeadlines] = useState(false);
+
+  const runFactCheck = async () => {
+    if (!formData.vin || !formData.purchaseDate || !formData.mileage || !formData.channel) {
+      await Swal.fire({
+        icon: 'warning',
+        text: '필수 입력을 모두 채워주세요.'
+      });
+      return;
+    }
+
+    // Mock 카히스토리 + OCR + 사진 분석
+    const kahistory = { ...MOCK_KAHISTORY, vin: formData.vin };
+    const ocr = { ...MOCK_OCR };
+    
+    // 사진 분석 (파일명 기반 간단한 규칙)
+    const photoFindings: string[] = [];
+    if (formData.inspectPhotos) {
+      Array.from(formData.inspectPhotos).forEach(file => {
+        const name = file.name.toLowerCase();
+        if (name.includes('mud') || name.includes('흙') || name.includes('진흙')) 
+          photoFindings.push('흙탕물 라인 의심');
+        if (name.includes('rust') || name.includes('녹')) 
+          photoFindings.push('안전벨트 버클/하체 녹 의심');
+        if (name.includes('under') || name.includes('언더')) 
+          photoFindings.push('언더커버 침수 흔적 의심');
+      });
+    }
+
+    // 불일치 플래그
+    const flags: string[] = [];
+    const hasAccident = kahistory.accidents.length > 0;
+    if (ocr.noAccidentMarked && hasAccident) flags.push('기록부-이력 불일치');
+    if (kahistory.accidents.some(a => a.type.includes('침수')) || photoFindings.length > 0) 
+      flags.push('침수 의심');
+
+    const result: DiagnosisResult = {
+      kahistory,
+      ocr,
+      photoFindings: photoFindings.length > 0 ? photoFindings : ['특이 사항 없음'],
+      flags
+    };
+
+    setDiagnosisResult(result);
+    setShowOptions(true);
+    setShowPackager(true);
+    setShowDeadlines(true);
+  };
+
+  const purchaseDate = formData.purchaseDate ? new Date(formData.purchaseDate) : null;
+  const today = new Date();
+  const daysSince = purchaseDate ? daysBetween(purchaseDate, today) : 0;
+
+  const options = showOptions ? {
+    warranty: daysSince <= 30 || formData.mileage <= 2000,
+    refund: diagnosisResult?.kahistory.accidents.length ? '이력 근거로 검토' : '사진·이력 기반 의심 시 검토',
+    personal: (formData.riders || '').toLowerCase().includes('자차') || 
+               (formData.riders || '').toLowerCase().includes('자가')
+  } : null;
+
+  return (
+    <>
+      <Header />
+      <main className="page">
+        <IntakeForm 
+          formData={formData} 
+          setFormData={setFormData} 
+          onSubmit={runFactCheck} 
+        />
+        {diagnosisResult && <DiagnosisSection result={diagnosisResult} />}
+        {showOptions && (
+          <OptionsSection 
+            options={options} 
+            channel={formData.channel}
+            daysSince={daysSince}
+            mileage={formData.mileage}
+          />
+        )}
+        {showPackager && (
+          <PackagerSection 
+            visible={showPackager}
+            vin={formData.vin}
+            purchaseDate={formData.purchaseDate}
+          />
+        )}
+        {showDeadlines && (
+          <DeadlinesSection 
+            visible={showDeadlines}
+            purchaseDate={formData.purchaseDate}
+            mileage={formData.mileage}
+          />
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      <footer className="footer__bar">© 2025 카클레임 Prototype</footer>
+    </>
   );
 }

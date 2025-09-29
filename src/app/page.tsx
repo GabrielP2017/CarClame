@@ -10,6 +10,7 @@ import DeadlinesSection from '@/components/DeadlinesSection';
 import { FormData, DiagnosisResult } from '@/types';
 import { MOCK_KAHISTORY, MOCK_OCR } from '@/lib/mockData';
 import { daysBetween } from '@/lib/utils';
+import { mapApiToDiagnosis } from '@/lib/mapApiToDiagnosis';
 import Swal from 'sweetalert2';
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
   const [showOptions, setShowOptions] = useState(false);
   const [showPackager, setShowPackager] = useState(false);
   const [showDeadlines, setShowDeadlines] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const runFactCheck = async () => {
     if (!formData.vin || !formData.purchaseDate || !formData.mileage || !formData.channel) {
@@ -33,6 +35,13 @@ export default function Home() {
       });
       return;
     }
+
+    // 로딩 시작 & 결과 섹션 초기화
+    if (isLoading) return;        // 중복 클릭 방지
+    setIsLoading(true);
+    setShowOptions(false);
+    setShowPackager(false);
+    setShowDeadlines(false);
 
     // Mock 카히스토리 + OCR + 사진 분석
     const kahistory = { ...MOCK_KAHISTORY, vin: formData.vin };
@@ -59,17 +68,15 @@ export default function Home() {
     if (kahistory.accidents.some(a => a.type.includes('침수')) || photoFindings.length > 0) 
       flags.push('침수 의심');
 
-    const result: DiagnosisResult = {
-      kahistory,
-      ocr,
-      photoFindings: photoFindings.length > 0 ? photoFindings : ['특이 사항 없음'],
-      flags
-    };
+    const res = await fetch('/api/match-remedy',{method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({ vehicleId: formData.vin, purchaseDate: formData.purchaseDate, currentMileage: Number(formData.mileage), purchaseChannel: formData.channel })});
+    const data = await res.json();
+    ;(window as any).__carclameApi = data;
+    setDiagnosisResult(mapApiToDiagnosis(data, formData));
 
-    setDiagnosisResult(result);
     setShowOptions(true);
     setShowPackager(true);
     setShowDeadlines(true);
+    setIsLoading(false);   // 로딩 종료
   };
 
   const purchaseDate = formData.purchaseDate ? new Date(formData.purchaseDate) : null;
@@ -88,10 +95,11 @@ export default function Home() {
       <Header />
       <main className="page">
         <IntakeForm 
-          formData={formData} 
-          setFormData={setFormData} 
-          onSubmit={runFactCheck} 
-        />
+            formData={formData}
+            setFormData={setFormData} 
+            onSubmit={runFactCheck}
+            isLoading={isLoading}
+          />
         {diagnosisResult && <DiagnosisSection result={diagnosisResult} />}
         {showOptions && (
           <OptionsSection 

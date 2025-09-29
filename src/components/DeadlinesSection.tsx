@@ -22,6 +22,7 @@ export default function DeadlinesSection({ visible, purchaseDate, mileage }: Dea
   
   const d30 = new Date(purchase);
   d30.setDate(d30.getDate() + 30);
+  const api = (typeof window !== 'undefined' && (window as any).__carclameApi) || null; // API 응답 접근
 
   return (
     <section className="card">
@@ -30,17 +31,19 @@ export default function DeadlinesSection({ visible, purchaseDate, mileage }: Dea
         <div className="timer">
           <div><strong>K Car 3일 환불</strong></div>
           <div className="due">{d3.toLocaleDateString()}</div>
-          <div>{leftStr(today, d3)}</div>
+          <div>{api?.deadlines?.d3?.label  ?? leftStr(today, d3)}</div>
         </div>
         <div className="timer">
           <div><strong>엔카 7일 환불</strong></div>
           <div className="due">{d7.toLocaleDateString()}</div>
-          <div>{leftStr(today, d7)}</div>
+          <div>{api?.deadlines?.d7?.label  ?? leftStr(today, d7)}</div>
         </div>
         <div className="timer">
           <div><strong>성능보증 30일/2,000km</strong></div>
           <div className="due">{d30.toLocaleDateString()}</div>
-          <div>{leftStr(today, d30)} · 주행거리 2,000km - 현재 {fmt(mileage)}km</div>
+          <div>
+            {api?.deadlines?.d30?.label ?? leftStr(today, d30)} · {api?.deadlines?.km2000?.label ?? `주행거리 2,000km - 현재 ${fmt(mileage)}km`}
+          </div>
         </div>
       </div>
       <p className="hint" style={{ fontSize: '13px', color: '#737373', marginTop: '12px' }}>

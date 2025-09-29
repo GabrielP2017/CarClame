@@ -6,9 +6,10 @@ interface IntakeFormProps {
   formData: FormData;
   setFormData: (data: FormData) => void;
   onSubmit: () => void;
+  isLoading?: boolean;
 }
 
-export default function IntakeForm({ formData, setFormData, onSubmit }: IntakeFormProps) {
+export default function IntakeForm({ formData, setFormData, onSubmit, isLoading }: IntakeFormProps) {
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -106,8 +107,14 @@ export default function IntakeForm({ formData, setFormData, onSubmit }: IntakeFo
         </details>
 
         <div className="actions full">
-          <button type="submit" className="btn primary">
-            <i className="ri-search-line"></i> 팩트체크 실행
+          <button
+            type="submit"
+            className="btn primary"
+            disabled={!!isLoading}
+            aria-busy={!!isLoading}
+          >
+            <i className="ri-search-line"></i>
+            {isLoading ? ' 실행 중…' : ' 팩트체크 실행'}
           </button>
         </div>
       </form>

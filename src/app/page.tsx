@@ -52,6 +52,21 @@ export default function Home() {
     setApiResponse(null);
 
     try {
+      // 이미지를 base64로 변환
+      const imagePromises: Promise<string>[] = [];
+      if (formData.inspectPhotos) {
+        Array.from(formData.inspectPhotos).forEach((file) => {
+          imagePromises.push(
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(file);
+            })
+          );
+        });
+      }
+      const carImages = await Promise.all(imagePromises);
+
       const res = await fetch("/api/match-remedy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,6 +75,8 @@ export default function Home() {
           purchaseDate: formData.purchaseDate,
           currentMileage: Number(formData.mileage),
           purchaseChannel: formData.channel,
+          carImages: carImages.length > 0 ? carImages : undefined,
+          ocrText: formData.docImages ? "OCR 처리 예정" : undefined, // 나중에 실제 OCR로 교체
         }),
       });
 

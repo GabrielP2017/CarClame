@@ -65,16 +65,75 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
         </div>
 
         <div className="photo panel">
-          <h3>사진 분석 룰</h3>
-          <ul className="bullets">
-            {result.photoFindings.length > 0 ? (
-              result.photoFindings.map((finding, i) => (
-                <li key={i}>{finding}</li>
-              ))
-            ) : (
-              <li>특이 사항 없음</li>
-            )}
-          </ul>
+          <h3>사진 분석 결과</h3>
+
+          <div style={{ marginBottom: "12px" }}>
+            <h4
+              style={{
+                fontSize: "14px",
+                margin: "8px 0 4px 0",
+                color: "#dc2626",
+                fontWeight: "600",
+              }}
+            >
+              🚨 구제 대상 하자
+            </h4>
+            <ul className="bullets" style={{ marginTop: "4px" }}>
+              {result.photoFindings.filter(
+                (f) =>
+                  f.includes("침수") ||
+                  f.includes("녹") ||
+                  f.includes("부식") ||
+                  f.includes("구제대상")
+              ).length > 0 ? (
+                result.photoFindings
+                  .filter(
+                    (f) =>
+                      f.includes("침수") ||
+                      f.includes("녹") ||
+                      f.includes("부식") ||
+                      f.includes("구제대상")
+                  )
+                  .map((finding, i) => (
+                    <li key={i}>{finding.replace("[구제대상]", "").trim()}</li>
+                  ))
+              ) : (
+                <li>해당 없음</li>
+              )}
+            </ul>
+          </div>
+
+          <div>
+            <h4
+              style={{
+                fontSize: "14px",
+                margin: "8px 0 4px 0",
+                color: "#737373",
+                fontWeight: "600",
+              }}
+            >
+              ℹ️ 참고 사항 (외관 하자)
+            </h4>
+            <ul className="bullets" style={{ marginTop: "4px" }}>
+              {result.photoFindings.filter(
+                (f) =>
+                  f.includes("참고") || f.includes("기스") || f.includes("도색")
+              ).length > 0 ? (
+                result.photoFindings
+                  .filter(
+                    (f) =>
+                      f.includes("참고") ||
+                      f.includes("기스") ||
+                      f.includes("도색")
+                  )
+                  .map((finding, i) => (
+                    <li key={i}>{finding.replace("[참고]", "").trim()}</li>
+                  ))
+              ) : (
+                <li>특이사항 없음</li>
+              )}
+            </ul>
+          </div>
         </div>
       </div>
 

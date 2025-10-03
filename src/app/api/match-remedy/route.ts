@@ -1,9 +1,7 @@
 // src/app/api/match-remedy/route.ts
-// 입력(JSON) → 규칙 엔진 → 표준 응답(JSON)
-// 사진/ocr 미제공이어도 빈칸 없이 항상 채워진 응답을 반환합니다.
-
 import { NextRequest, NextResponse } from "next/server";
 import { evaluateAll, type MatchRemedyInput } from "@/lib/rules";
+import { analyzeCarImages, analyzeOcrText } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,12 +53,75 @@ export async function POST(req: NextRequest) {
       carImages,
     };
 
+    // 규칙 엔진 실행 (먼저 기본 결과 생성)
     const result = evaluateAll(input);
+
+    // --- Gemini AI 분석 (이미지/OCR 있을 경우만) ---
+    let geminiImageResult = null;
+    let geminiOcrResult = null;
+
+    // 이미지 분석
+    if (carImages && Array.isArray(carImages) && carImages.length > 0) {
+      try {
+        geminiImageResult = await analyzeCarImages(carImages);
+        console.log("Gemini Image Analysis:", geminiImageResult);
+      } catch (err) {
+        console.error("Image analysis failed:", err);
+      }
+    }
+
+    // OCR 텍스트 분석
+    if (ocrText && typeof ocrText === "string" && ocrText.trim()) {
+      try {
+        geminiOcrResult = await analyzeOcrText(ocrText);
+        console.log("Gemini OCR Analysis:", geminiOcrResult);
+      } catch (err) {
+        console.error("OCR analysis failed:", err);
+      }
+    }
+
+    // --- Gemini 결과를 factCheck에 병합 ---
+    if (geminiImageResult) {
+      const criticalText = geminiImageResult.criticalFindings?.length
+        ? geminiImageResult.criticalFindings.join(" / ")
+        : "해당 없음";
+
+      const minorText = geminiImageResult.minorFindings?.length
+        ? geminiImageResult.minorFindings.join(" / ")
+        : "특이사항 없음";
+
+      result.factCheck.photo = {
+        status: geminiImageResult.isFloodSuspicious ? "의심" : "정상",
+        summary: `[구제대상] ${criticalText} | [참고] ${minorText}`,
+      };
+    }
+
+    if (geminiOcrResult) {
+      result.factCheck.ocr = {
+        status: geminiOcrResult.noAccidentMarked ? "무사고 표기" : "사고 표기",
+        summary: `엔진:${geminiOcrResult.categories.engine}, 미션:${geminiOcrResult.categories.mission}`,
+        evidence: [geminiOcrResult.rawText],
+      };
+    }
+
+    // 불일치 플래그 추가
+    if (
+      geminiOcrResult?.noAccidentMarked &&
+      geminiImageResult?.isFloodSuspicious
+    ) {
+      result.flags.push("기록부-사진 불일치: 무사고 표기이나 침수 의심");
+    }
+
+    // 최종 응답 반환
     return NextResponse.json(result, { status: 200 });
-  } catch {
+  } catch (error) {
+    console.error("API Route Error:", error);
     return NextResponse.json(
-      { error: "bad_json", message: "JSON 본문을 확인하세요." },
-      { status: 400 }
+      {
+        error: "server_error",
+        message: error instanceof Error ? error.message : "알 수 없는 오류",
+      },
+      { status: 500 }
     );
   }
 }

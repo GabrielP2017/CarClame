@@ -18,10 +18,36 @@ export function mapApiToDiagnosis(api: any, form: FormData): DiagnosisResult {
     noAccidentMarked: noAccident,
   };
 
-  // 3) 사진 결과 → 텍스트로 매핑
-  const photoStatus = String(api?.factCheck?.photo?.status || "");
-  const photoFindings =
-    photoStatus === "의심" ? ["침수/오염 의심"] : ["특이 사항 없음"];
+  // 3) 사진 결과 → API summary 파싱
+  const photoSummary = String(api?.factCheck?.photo?.summary || "");
+  const photoFindings: string[] = [];
+
+  // [구제대상] 파싱
+  const criticalMatch = photoSummary.match(/\[구제대상\]\s*([^|]+)/);
+  if (criticalMatch && criticalMatch[1] !== "해당 없음") {
+    criticalMatch[1].split("/").forEach((item) => {
+      const trimmed = item.trim();
+      if (trimmed && trimmed !== "해당 없음") {
+        photoFindings.push(`[구제대상] ${trimmed}`);
+      }
+    });
+  }
+
+  // [참고] 파싱
+  const minorMatch = photoSummary.match(/\[참고\]\s*(.+)/);
+  if (minorMatch && minorMatch[1] !== "특이사항 없음") {
+    minorMatch[1].split("/").forEach((item) => {
+      const trimmed = item.trim();
+      if (trimmed && trimmed !== "특이사항 없음") {
+        photoFindings.push(`[참고] ${trimmed}`);
+      }
+    });
+  }
+
+  // 아무것도 없으면 기본 메시지
+  if (photoFindings.length === 0) {
+    photoFindings.push("특이 사항 없음");
+  }
 
   // 4) flags 그대로 사용(없으면 빈 배열)
   const flags: string[] = Array.isArray(api?.flags)

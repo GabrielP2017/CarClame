@@ -102,15 +102,24 @@ export default function IntakeForm({
               />
             </div>
             <div className="field">
-              <label>점검 사진(하체 녹/흙탕물 흔적)</label>
+              <label>점검 사진(하체 녹/흙탕물 흔적) - 최대 5장</label>
               <input
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={(e) =>
-                  handleInputChange("inspectPhotos", e.target.files)
-                }
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files && files.length > 5) {
+                    alert("최대 5장까지만 업로드 가능합니다.");
+                    e.target.value = ""; // 초기화
+                    return;
+                  }
+                  handleInputChange("inspectPhotos", files);
+                }}
               />
+              <small style={{ fontSize: "12px", color: "#737373" }}>
+                {formData.inspectPhotos?.length || 0}/5 장 선택됨
+              </small>
             </div>
             <div className="field">
               <label>정비 견적서</label>

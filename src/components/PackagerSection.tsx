@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 interface PackagerSectionProps {
   visible: boolean;
@@ -8,17 +8,24 @@ interface PackagerSectionProps {
   purchaseDate: string;
 }
 
-export default function PackagerSection({ visible, vin, purchaseDate }: PackagerSectionProps) {
+export default function PackagerSection({
+  visible,
+  vin,
+  purchaseDate,
+}: PackagerSectionProps) {
   if (!visible) return null;
 
   const makeDoc = (kind: string) => {
-    const title = kind === 'warranty' ? '성능보증보험 청구서'
-      : kind === 'refund' ? '판매사 환불 신청서'
-      : '자동차보험 공통 서류';
-    
-    const win = window.open('', '_blank');
+    const title =
+      kind === "warranty"
+        ? "성능보증보험 청구서"
+        : kind === "refund"
+        ? "판매사 환불 신청서"
+        : "자동차보험 공통 서류";
+
+    const win = window.open("", "_blank");
     if (!win) return;
-    
+
     win.document.write(`
       <!DOCTYPE html>
       <html lang="ko">
@@ -51,18 +58,18 @@ export default function PackagerSection({ visible, vin, purchaseDate }: Packager
 
   const handleMailSend = () => {
     Swal.fire({
-      icon: 'info',
-      title: '메일 전송(목업)',
-      text: 'DEMO: 실제 메일 연동은 API 연결 후 활성화됩니다.'
+      icon: "info",
+      title: "메일 전송(목업)",
+      text: "DEMO: 실제 메일 연동은 API 연결 후 활성화됩니다.",
     });
   };
 
   const checklist = [
-    '매매계약서/거래내역',
-    '자동차등록증 사본',
-    '성능·상태점검기록부 사본',
-    '카히스토리 이력 리포트(목업)',
-    '사진 증빙(흙탕물 라인/녹/언더커버 등)',
+    "매매계약서/거래내역",
+    "자동차등록증 사본",
+    "성능·상태점검기록부 사본",
+    "카히스토리 이력 리포트(목업)",
+    "사진 증빙(흙탕물 라인/녹/언더커버 등)",
   ];
 
   return (
@@ -71,18 +78,24 @@ export default function PackagerSection({ visible, vin, purchaseDate }: Packager
       <div className="grid3">
         <div className="panel">
           <h3>성능보증보험 청구서</h3>
-          <button className="btn" onClick={() => makeDoc('warranty')}>자동 작성</button>
+          <button className="btn" onClick={() => makeDoc("warranty")}>
+            자동 작성
+          </button>
         </div>
         <div className="panel">
           <h3>판매사 환불 신청서</h3>
-          <button className="btn" onClick={() => makeDoc('refund')}>자동 작성</button>
+          <button className="btn" onClick={() => makeDoc("refund")}>
+            자동 작성
+          </button>
         </div>
         <div className="panel">
           <h3>자동차보험 공통 서류</h3>
-          <button className="btn" onClick={() => makeDoc('insurance')}>자동 작성</button>
+          <button className="btn" onClick={() => makeDoc("insurance")}>
+            자동 작성
+          </button>
         </div>
       </div>
-      
+
       <div className="panel full">
         <h3>공통 체크리스트</h3>
         <ul className="bullets">
@@ -91,7 +104,7 @@ export default function PackagerSection({ visible, vin, purchaseDate }: Packager
           ))}
         </ul>
       </div>
-      
+
       <div className="actions">
         <button className="btn outline" onClick={() => window.print()}>
           <i className="ri-printer-line"></i> 인쇄/저장

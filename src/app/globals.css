@@ -1,7 +1,7 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 :root {
-  --primary: #0074C3;
+  --primary: #0074c3;
   --dark: #15191d;
   --light: #737373;
   --bg: #f5f7fb;
@@ -15,7 +15,8 @@
 body {
   margin: 0;
   background: var(--bg);
-  font-family: 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
 }
 
 .nav__header {

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { DiagnosisResult } from '@/types';
-import { fmt } from '@/lib/utils';
+import { DiagnosisResult } from "@/types";
+import { fmt } from "@/lib/utils";
 
 interface DiagnosisSectionProps {
   result: DiagnosisResult | null;
@@ -23,11 +23,11 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
             </div>
             <div className="row">
               <span>전손</span>
-              <strong>{result.kahistory.writtenOff ? '있음' : '없음'}</strong>
+              <strong>{result.kahistory.writtenOff ? "있음" : "없음"}</strong>
             </div>
             <div className="row">
               <span>도난</span>
-              <strong>{result.kahistory.theft ? '있음' : '없음'}</strong>
+              <strong>{result.kahistory.theft ? "있음" : "없음"}</strong>
             </div>
             {result.kahistory.accidents.map((a, i) => (
               <div key={i} className="row">
@@ -38,7 +38,10 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
               </div>
             ))}
           </div>
-          <p className="hint" style={{ fontSize: '12px', color: '#737373', marginTop: '8px' }}>
+          <p
+            className="hint"
+            style={{ fontSize: "12px", color: "#737373", marginTop: "8px" }}
+          >
             ※ 보험 처리 건 중심이며 사고 규모/과실 비율은 한계가 있습니다.
           </p>
         </div>
@@ -48,7 +51,9 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
           <div className="kv">
             <div className="row">
               <span>기록부 표기</span>
-              <strong>{result.ocr.noAccidentMarked ? '무사고' : '사고표기'}</strong>
+              <strong>
+                {result.ocr.noAccidentMarked ? "무사고" : "사고표기"}
+              </strong>
             </div>
             {Object.entries(result.ocr.categories).map(([k, v]) => (
               <div key={k} className="row">
@@ -62,16 +67,22 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
         <div className="photo panel">
           <h3>사진 분석 룰</h3>
           <ul className="bullets">
-            {result.photoFindings.length > 0
-              ? result.photoFindings.map((finding, i) => <li key={i}>{finding}</li>)
-              : <li>특이 사항 없음</li>}
+            {result.photoFindings.length > 0 ? (
+              result.photoFindings.map((finding, i) => (
+                <li key={i}>{finding}</li>
+              ))
+            ) : (
+              <li>특이 사항 없음</li>
+            )}
           </ul>
         </div>
       </div>
 
       <div className="flags">
         {result.flags.map((flag, i) => (
-          <span key={i} className="flag">{flag}</span>
+          <span key={i} className="flag">
+            {flag}
+          </span>
         ))}
       </div>
     </section>

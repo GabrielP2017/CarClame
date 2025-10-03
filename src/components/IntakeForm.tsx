@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FormData } from '@/types';
+import { FormData } from "@/types";
 
 interface IntakeFormProps {
   formData: FormData;
@@ -9,7 +9,12 @@ interface IntakeFormProps {
   isLoading?: boolean;
 }
 
-export default function IntakeForm({ formData, setFormData, onSubmit, isLoading }: IntakeFormProps) {
+export default function IntakeForm({
+  formData,
+  setFormData,
+  onSubmit,
+  isLoading,
+}: IntakeFormProps) {
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -18,15 +23,22 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
     <section className="card">
       <h1>사실 확인 ▶ 구제 옵션 ▶ 서류 패키지</h1>
       <p className="sub">
-        차량 번호/VIN과 구매일·주행거리만 입력하면, 불일치 탐지 → 환불/보증/보험 경로 → 원클릭 서류 생성까지 한 번에.
+        차량 번호/VIN과 구매일·주행거리만 입력하면, 불일치 탐지 → 환불/보증/보험
+        경로 → 원클릭 서류 생성까지 한 번에.
       </p>
 
-      <form className="grid2" onSubmit={(e) => { e.preventDefault(); onSubmit(); }}>
+      <form
+        className="grid2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
         <div className="field">
           <label>차량번호 또는 VIN*</label>
           <input
             value={formData.vin}
-            onChange={(e) => handleInputChange('vin', e.target.value)}
+            onChange={(e) => handleInputChange("vin", e.target.value)}
             placeholder="예: 12가3456 또는 KMHxxxxxxxxx"
             required
           />
@@ -36,7 +48,7 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
           <input
             type="date"
             value={formData.purchaseDate}
-            onChange={(e) => handleInputChange('purchaseDate', e.target.value)}
+            onChange={(e) => handleInputChange("purchaseDate", e.target.value)}
             required
           />
         </div>
@@ -46,7 +58,9 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
             type="number"
             min="0"
             value={formData.mileage}
-            onChange={(e) => handleInputChange('mileage', parseInt(e.target.value))}
+            onChange={(e) =>
+              handleInputChange("mileage", parseInt(e.target.value))
+            }
             placeholder="예: 42350"
             required
           />
@@ -55,13 +69,14 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
           <label>판매 유형*</label>
           <select
             value={formData.channel}
-            onChange={(e) => handleInputChange('channel', e.target.value)}
+            onChange={(e) => handleInputChange("channel", e.target.value)}
             required
           >
             <option value="">선택</option>
-            <option value="딜러">딜러</option>
-            <option value="직영">직영</option>
+            <option value="K Car">K Car</option>
+            <option value="엔카">엔카</option>
             <option value="개인">개인</option>
+            <option value="기타">기타</option>
           </select>
         </div>
 
@@ -71,18 +86,18 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
             type="file"
             accept="image/*,.pdf"
             multiple
-            onChange={(e) => handleInputChange('docImages', e.target.files)}
+            onChange={(e) => handleInputChange("docImages", e.target.files)}
           />
         </div>
-        
+
         <details className="full">
           <summary>선택 입력 펼치기</summary>
-          <div className="grid2" style={{ marginTop: '12px' }}>
+          <div className="grid2" style={{ marginTop: "12px" }}>
             <div className="field">
               <label>보험 특약(자차/침수/타이어/형사합의 등)</label>
               <input
-                value={formData.riders || ''}
-                onChange={(e) => handleInputChange('riders', e.target.value)}
+                value={formData.riders || ""}
+                onChange={(e) => handleInputChange("riders", e.target.value)}
                 placeholder="예: 자차, 침수"
               />
             </div>
@@ -92,7 +107,9 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={(e) => handleInputChange('inspectPhotos', e.target.files)}
+                onChange={(e) =>
+                  handleInputChange("inspectPhotos", e.target.files)
+                }
               />
             </div>
             <div className="field">
@@ -100,7 +117,9 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
               <input
                 type="file"
                 accept="application/pdf,image/*"
-                onChange={(e) => handleInputChange('repairPdf', e.target.files?.[0])}
+                onChange={(e) =>
+                  handleInputChange("repairPdf", e.target.files?.[0])
+                }
               />
             </div>
           </div>
@@ -114,7 +133,7 @@ export default function IntakeForm({ formData, setFormData, onSubmit, isLoading 
             aria-busy={!!isLoading}
           >
             <i className="ri-search-line"></i>
-            {isLoading ? ' 실행 중…' : ' 팩트체크 실행'}
+            {isLoading ? " 실행 중…" : " 팩트체크 실행"}
           </button>
         </div>
       </form>

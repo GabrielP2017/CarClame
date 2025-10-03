@@ -8,9 +8,12 @@ function parseLocalDate(yyyyMmDd: string): Date | null {
   if (!yyyyMmDd) return null;
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(yyyyMmDd);
   if (!m) return null;
-  const y = +m[1], mon = +m[2] - 1, d = +m[3];
+  const y = +m[1],
+    mon = +m[2] - 1,
+    d = +m[3];
   const dt = new Date(y, mon, d);
-  if (dt.getFullYear() !== y || dt.getMonth() !== mon || dt.getDate() !== d) return null;
+  if (dt.getFullYear() !== y || dt.getMonth() !== mon || dt.getDate() !== d)
+    return null;
   return dt;
 }
 
@@ -44,14 +47,20 @@ export function mileageDelta(
   currentMileage: number
 ): number | null {
   if (purchaseMileage == null || isNaN(purchaseMileage)) return null;
-  const used = Math.max(0, Math.round(currentMileage) - Math.round(purchaseMileage));
+  const used = Math.max(
+    0,
+    Math.round(currentMileage) - Math.round(purchaseMileage)
+  );
   return used;
 }
 
 export function kmLeftLabel(limitKm: number, usedKm: number | null): KmWindow {
-  if (usedKm == null) return { kmLeft: null, label: '미입력' };
+  if (usedKm == null) return { kmLeft: null, label: "미입력" };
   const left = limitKm - usedKm;
-  return { kmLeft: left, label: left >= 0 ? `남은 ${left}km` : `초과 ${Math.abs(left)}km` };
+  return {
+    kmLeft: left,
+    label: left >= 0 ? `남은 ${left}km` : `초과 ${Math.abs(left)}km`,
+  };
 }
 
 // ---- Deadline windows ----

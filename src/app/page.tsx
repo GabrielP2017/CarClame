@@ -8,7 +8,6 @@ import OptionsSection from "@/components/OptionsSection";
 import PackagerSection from "@/components/PackagerSection";
 import DeadlinesSection from "@/components/DeadlinesSection";
 import { FormData, DiagnosisResult } from "@/types";
-import { MOCK_KAHISTORY, MOCK_OCR } from "@/lib/mockData";
 import { daysBetween } from "@/lib/utils";
 import { mapApiToDiagnosis } from "@/lib/mapApiToDiagnosis";
 import Swal from "sweetalert2";
@@ -90,8 +89,9 @@ export default function Home() {
           vehicleId: formData.vin,
           purchaseDate: formData.purchaseDate,
           currentMileage: Number(formData.mileage),
-          purchaseMileage: formData.purchaseMileage || null, // 구매시 주행거리
+          purchaseMileage: formData.purchaseMileage || null,
           purchaseChannel: formData.channel,
+          riders: formData.riders || undefined,
           carImages: carImages.length > 0 ? carImages : undefined,
           docImages: docImages.length > 0 ? docImages : undefined,
         }),
@@ -112,7 +112,7 @@ export default function Home() {
       await Swal.fire({
         icon: "error",
         title: "오류 발생",
-        text: "팩트체크 실행 중 문제가 발생했습니다.",
+        text: "자동 분석 중 문제가 발생했습니다.",
       });
       console.error(error);
     } finally {
@@ -136,6 +136,27 @@ export default function Home() {
           onSubmit={runFactCheck}
           isLoading={isLoading}
         />
+        {isLoading && (
+          <section
+            className="card"
+            style={{ textAlign: "center", padding: "60px 20px" }}
+          >
+            <div className="loading-spinner"></div>
+            <h2
+              style={{
+                fontSize: "24px",
+                fontWeight: "700",
+                marginTop: "20px",
+                color: "#0074c3",
+              }}
+            >
+              AI 자동 분석 중...
+            </h2>
+            <p style={{ fontSize: "15px", color: "#737373", marginTop: "8px" }}>
+              차량 정보를 분석하고 있습니다. 잠시만 기다려주세요.
+            </p>
+          </section>
+        )}
         {diagnosisResult && <DiagnosisSection result={diagnosisResult} />}
         {showOptions && apiResponse && (
           <OptionsSection apiResponse={apiResponse} />
@@ -145,6 +166,7 @@ export default function Home() {
             visible={showPackager}
             vin={formData.vin}
             purchaseDate={formData.purchaseDate}
+            apiResponse={apiResponse}
           />
         )}
         {showDeadlines && apiResponse && (

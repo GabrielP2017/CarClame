@@ -10,7 +10,7 @@ export function mapApiToDiagnosis(api: any, form: FormData): DiagnosisResult {
     vin: form.vin || (api?.factCheck?.history?.vin ?? MOCK_KAHISTORY.vin),
   };
 
-  // 2) OCR: API 응답 우선 사용, 없으면 MOCK
+  // 2) OCR: API 응답 우선 사용, 없으면 "none" 상태로
   const geminiOcrResult = api?.geminiOcrResult || api?.factCheck?.ocr;
 
   const ocr: OCRData = geminiOcrResult
@@ -23,9 +23,20 @@ export function mapApiToDiagnosis(api: any, form: FormData): DiagnosisResult {
           brake: geminiOcrResult.categories?.brake || "미확인",
           electric: geminiOcrResult.categories?.electric || "미확인",
         },
-        confidence: geminiOcrResult.confidence || "high", // Gemini 결과 그대로 보존
+        confidence: geminiOcrResult.confidence || "high",
       }
-    : MOCK_OCR;
+    : {
+        // OCR 이미지 미업로드 시
+        noAccidentMarked: false,
+        categories: {
+          engine: "미확인",
+          mission: "미확인",
+          steering: "미확인",
+          brake: "미확인",
+          electric: "미확인",
+        },
+        confidence: "none" as "high" | "low" | "retry" | "none", // 타입 명시
+      };
 
   // 3) 사진 결과 → API summary 파싱
   const photoSummary = String(api?.factCheck?.photo?.summary || "");

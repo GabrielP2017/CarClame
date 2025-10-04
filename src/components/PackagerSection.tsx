@@ -6,12 +6,14 @@ interface PackagerSectionProps {
   visible: boolean;
   vin: string;
   purchaseDate: string;
+  apiResponse?: any;
 }
 
 export default function PackagerSection({
   visible,
   vin,
   purchaseDate,
+  apiResponse,
 }: PackagerSectionProps) {
   if (!visible) return null;
 
@@ -64,13 +66,50 @@ export default function PackagerSection({
     });
   };
 
-  const checklist = [
+  // ★ Gemini 분석 결과 기반 증빙 자료 자동 생성
+  const baseChecklist = [
     "매매계약서/거래내역",
     "자동차등록증 사본",
     "성능·상태점검기록부 사본",
     "카히스토리 이력 리포트(목업)",
-    "사진 증빙(흙탕물 라인/녹/언더커버 등)",
   ];
+
+  const evidenceList = [];
+
+  // OCR 불량 항목 증빙
+  if (apiResponse?.geminiOcrResult?.categories) {
+    const badParts = Object.entries(apiResponse.geminiOcrResult.categories)
+      .filter(
+        ([_, status]: [string, any]) => status === "불량" || status === "점검요"
+      )
+      .map(([part, _]) => {
+        const partNames: any = {
+          engine: "엔진",
+          mission: "변속기",
+          steering: "조향장치",
+          brake: "제동장치",
+          electric: "전기장치",
+        };
+        return partNames[part] || part;
+      });
+
+    if (badParts.length > 0) {
+      evidenceList.push(`✓ 성능점검기록부 하자 확인: ${badParts.join(", ")}`);
+    }
+  }
+
+  // 사진 침수 증빙
+  if (apiResponse?.geminiImageResult?.criticalFindings?.length > 0) {
+    evidenceList.push(
+      `✓ 사진 증빙: ${apiResponse.geminiImageResult.criticalFindings.join(
+        ", "
+      )}`
+    );
+  } else {
+    evidenceList.push("차량 점검 사진(하체/엔진룸 등)");
+  }
+
+  const checklist = [...baseChecklist, ...evidenceList];
 
   return (
     <section className="card">

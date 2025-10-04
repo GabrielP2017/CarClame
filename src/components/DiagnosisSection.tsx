@@ -19,10 +19,28 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
 
   return (
     <section className="card">
-      <h2>팩트체크 결과</h2>
+      <h2 style={{ fontSize: "22px", fontWeight: "800" }}>자동 분석 결과</h2>
+
+      {result.flags && result.flags.length > 0 && (
+        <div style={{ marginBottom: "16px" }}>
+          <h3 style={{ fontSize: "15px", marginBottom: "8px" }}>
+            ⚠️ 검토 필요 사항
+          </h3>
+          <div className="flags">
+            {result.flags.map((flag, i) => (
+              <span key={i} className="flag">
+                {flag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="grid3">
         <div className="kahi panel">
-          <h3>카히스토리(참고용)</h3>
+          <h3 style={{ fontSize: "16px", fontWeight: "700" }}>
+            카히스토리(참고용)
+          </h3>
           <div
             style={{
               background: "#fffbeb",
@@ -36,7 +54,7 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
           >
             ⓘ 데모 버전: 카히스토리 API는 기업 제휴 필요
             <br />
-            실제 서비스에서는 VIN 기반 자동 조회 제공 예정
+            대체 API 또는 기능 구현 예정
           </div>
           <div className="kv">
             <div className="row">
@@ -64,14 +82,34 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
             className="hint"
             style={{ fontSize: "12px", color: "#737373", marginTop: "8px" }}
           >
-            ※ 보험 처리 건 중심이며 사고 규모/과실 비율은 한계가 있습니다.
+            ※ 보험 처리된 사고 기록이며, 실제 사고 규모나 과실 비율은 포함되지
+            않습니다.
           </p>
         </div>
 
         <div className="ocr panel">
-          <h3>성능기록부 분석</h3>
+          <h3 style={{ fontSize: "16px", fontWeight: "700" }}>
+            성능기록부 분석
+          </h3>
 
-          {result.ocr.confidence === "retry" ? (
+          {result.ocr.confidence === "none" ? (
+            <div
+              style={{
+                background: "#fef2f2",
+                border: "2px solid #dc2626",
+                borderRadius: "8px",
+                padding: "16px",
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#dc2626",
+                fontWeight: "600",
+              }}
+            >
+              ⚠️ 이미지 업로드 필요
+              <br />
+              성능점검기록부 사진을 업로드하여 분석을 진행하세요
+            </div>
+          ) : result.ocr.confidence === "retry" ? (
             <div
               style={{
                 background: "#fef2f2",
@@ -168,12 +206,14 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
             className="hint"
             style={{ fontSize: "12px", color: "#737373", marginTop: "8px" }}
           >
-            ※ AI가 기록부 이미지에서 추출한 정보입니다.
+            ※ 성능점검기록부에서 자동 추출한 정보입니다.
           </p>
         </div>
 
         <div className="photo panel">
-          <h3>사진 분석 결과</h3>
+          <h3 style={{ fontSize: "16px", fontWeight: "700" }}>
+            사진 분석 결과
+          </h3>
 
           <div style={{ marginBottom: "12px" }}>
             <h4
@@ -184,7 +224,7 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
                 fontWeight: "600",
               }}
             >
-              🚨 구제 대상 하자
+              🚨 중대 하자 (보험/환불 대상)
             </h4>
             <ul className="bullets" style={{ marginTop: "4px" }}>
               {result.photoFindings.filter(
@@ -243,14 +283,6 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
             </ul>
           </div>
         </div>
-      </div>
-
-      <div className="flags">
-        {result.flags.map((flag, i) => (
-          <span key={i} className="flag">
-            {flag}
-          </span>
-        ))}
       </div>
     </section>
   );

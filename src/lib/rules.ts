@@ -17,16 +17,18 @@ import {
   mileageDelta,
 } from "@/lib/timeMileage";
 
-// ====== 입/출력 타입 (1단계 계약과 동일) ======
+// ====== 입/출력 타입 ======
 export type MatchRemedyInput = {
   vehicleId: string;
-  purchaseDate: string; // YYYY-MM-DD
-  currentMileage: number; // 현재 주행거리
-  purchaseMileage?: number | null; // 구매시 주행거리(옵션)
+  purchaseDate: string;
+  currentMileage: number;
+  purchaseMileage?: number | null;
   purchaseChannel: "개인" | "K Car" | "엔카" | "기타";
-  // 아래 필드는 3단계에서는 사용하지 않지만, 4~8단계에서 활용 예정
   ocrText?: string;
   carImages?: string[];
+  riders?: string; // 보험 특약
+  geminiOcrResult?: any;
+  geminiImageResult?: any;
 };
 
 type FactHistory = { status: string; summary: string; evidence: string[] };
@@ -161,22 +163,80 @@ export function evaluateAll(input: MatchRemedyInput): MatchRemedyOutput {
   );
   const dayOk = elapsedDays <= 30;
   const kmOk = usedKm == null ? null : usedKm <= 2000;
-  const liabilityVerdict = verdictByDayKm(dayOk, kmOk);
-  const liabilityReason = buildLiabilityReason(elapsedDays, usedKm);
+  let liabilityVerdict = verdictByDayKm(dayOk, kmOk);
+  let liabilityReason = buildLiabilityReason(elapsedDays, usedKm);
+
+  // ★ OCR 결과 반영: 불량 항목이 있으면 보험 청구 권장
+  if (input.geminiOcrResult?.categories) {
+    const badCategories = Object.values(
+      input.geminiOcrResult.categories
+    ).filter((v: any) => v === "불량" || v === "점검요");
+
+    if (badCategories.length >= 2) {
+      liabilityReason += ` ⚠️ 성능점검기록부상 ${badCategories.length}개 부품 하자 확인됨 - 보험 청구 강력 권장`;
+    } else if (badCategories.length === 1) {
+      liabilityReason += ` (성능점검기록부상 1개 부품 하자 확인)`;
+    }
+  }
 
   // 3) 판매사 환불 판정
-  const dealer = evaluateDealerRefund(input.purchaseChannel, elapsedDays);
+  let dealer = evaluateDealerRefund(input.purchaseChannel, elapsedDays);
 
-  // 4) 개인보험(기본: 검토 필요 + 공통 서류 안내)
-  const personal: Personal = {
-    verdict: "검토 필요",
-    reason: "개인 자동차보험 청구는 사건 유형별로 상이. 공통 서류 안내 필요",
-  };
+  // ★ 사진 분석 결과 반영: 침수 의심 시 90일 환불 안내
+  if (input.geminiImageResult?.isFloodSuspicious) {
+    dealer.reason += " | 침수 의심 흔적 발견 시 90일 환불 정책 검토 가능";
+  }
+
+  // 4) 개인보험 판정 (보험 특약 기반)
+  let personal: Personal;
+
+  if (input.riders) {
+    const ridersLower = input.riders.toLowerCase();
+    const hasJacha =
+      ridersLower.includes("자차") || ridersLower.includes("자가");
+    const hasFlood = ridersLower.includes("침수");
+
+    // 침수 특약 + 사진에서 침수 의심 확인
+    if (hasFlood && input.geminiImageResult?.isFloodSuspicious) {
+      personal = {
+        verdict: "청구 적극 권장",
+        reason:
+          "침수 특약 가입 + 침수 흔적 발견. 청구서·개인정보동의서·위임장 준비",
+      };
+    }
+    // 침수 특약만 있고 사진 증거 없음
+    else if (hasFlood && !input.geminiImageResult?.isFloodSuspicious) {
+      personal = {
+        verdict: "증거 보완 필요",
+        reason: "침수 특약 확인되나 사진 증거 부족. 추가 증빙 후 청구 가능",
+      };
+    }
+    // 자차 특약만 있음
+    else if (hasJacha) {
+      personal = {
+        verdict: "청구 가능 추정",
+        reason: "자차 담보 특약 확인됨. 청구서·개인정보동의서·위임장 준비",
+      };
+    }
+    // 기타 특약
+    else {
+      personal = {
+        verdict: "특약 확인 필요",
+        reason: `입력 특약: ${input.riders}. 보험사 확인 후 청구 가능 여부 판단`,
+      };
+    }
+  } else {
+    // 특약 미입력
+    personal = {
+      verdict: "검토 필요",
+      reason: "가입 특약 미확인. 보험증권 확인 후 청구 가능 여부 판단",
+    };
+  }
 
   // 5) 팩트체크 카드(기본값)
   const fact = buildFactCheckDefaults();
 
-  // 6) 불일치/경고 플래그(3단계에서는 기본 없음)
+  // 6) 불일치/경고 플래그
   const flags: string[] = [];
 
   return {

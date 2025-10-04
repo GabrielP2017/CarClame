@@ -44,20 +44,7 @@ export async function POST(req: NextRequest) {
         ? null
         : Math.max(0, Math.round(Number(purchaseMileage)));
 
-    const input: MatchRemedyInput = {
-      vehicleId,
-      purchaseDate,
-      currentMileage: currentKm,
-      purchaseMileage: purchaseKm,
-      purchaseChannel,
-      ocrText,
-      carImages,
-    };
-
-    // 규칙 엔진 실행 (먼저 기본 결과 생성)
-    const result = evaluateAll(input);
-
-    // --- Gemini AI 분석 (이미지/OCR 있을 경우만) ---
+    // --- Gemini AI 분석 먼저 실행 (이미지/OCR 있을 경우만) ---
     let geminiImageResult = null;
     let geminiOcrResult = null;
 
@@ -79,7 +66,39 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error("Document analysis failed:", err);
       }
+    } else {
+      // 이미지 미업로드 시 명시적으로 "none" 상태 설정
+      geminiOcrResult = {
+        noAccidentMarked: false,
+        categories: {
+          engine: "미확인",
+          mission: "미확인",
+          steering: "미확인",
+          brake: "미확인",
+          electric: "미확인",
+        },
+        rawText: "이미지 미업로드",
+        confidence: "none" as "high" | "low" | "retry",
+      };
+      console.log("No document image uploaded - set to 'none'");
     }
+
+    // ★ Gemini 결과를 포함한 입력 객체 생성
+    const input: MatchRemedyInput = {
+      vehicleId,
+      purchaseDate,
+      currentMileage: currentKm,
+      purchaseMileage: purchaseKm,
+      purchaseChannel,
+      ocrText,
+      carImages,
+      riders: body.riders,
+      geminiOcrResult,
+      geminiImageResult,
+    };
+
+    // 규칙 엔진 실행 (Gemini 결과가 반영된 판정)
+    const result = evaluateAll(input);
 
     // --- Gemini 결과를 factCheck에 병합 ---
     if (geminiImageResult) {

@@ -21,7 +21,7 @@ export interface OCRData {
     brake: string;
     electric: string;
   };
-  confidence?: "high" | "low" | "retry"; // 추가
+  confidence?: "high" | "low" | "retry" | "none";
 }
 
 export interface FormData {

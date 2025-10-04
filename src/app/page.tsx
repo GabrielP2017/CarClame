@@ -18,6 +18,7 @@ export default function Home() {
     vin: "",
     purchaseDate: "",
     mileage: 0,
+    purchaseMileage: null,
     channel: "",
   });
 
@@ -52,7 +53,7 @@ export default function Home() {
     setApiResponse(null);
 
     try {
-      // 이미지를 base64로 변환
+      // 점검 사진을 base64로 변환 (침수/녹 분석용)
       const imagePromises: Promise<string>[] = [];
       if (formData.inspectPhotos) {
         Array.from(formData.inspectPhotos).forEach((file) => {
@@ -67,6 +68,21 @@ export default function Home() {
       }
       const carImages = await Promise.all(imagePromises);
 
+      // 문서 이미지를 base64로 변환 (OCR 분석용)
+      const docImagePromises: Promise<string>[] = [];
+      if (formData.docImages) {
+        Array.from(formData.docImages).forEach((file) => {
+          docImagePromises.push(
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(file);
+            })
+          );
+        });
+      }
+      const docImages = await Promise.all(docImagePromises);
+
       const res = await fetch("/api/match-remedy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,9 +90,10 @@ export default function Home() {
           vehicleId: formData.vin,
           purchaseDate: formData.purchaseDate,
           currentMileage: Number(formData.mileage),
+          purchaseMileage: formData.purchaseMileage || null, // 구매시 주행거리
           purchaseChannel: formData.channel,
           carImages: carImages.length > 0 ? carImages : undefined,
-          ocrText: formData.docImages ? "OCR 처리 예정" : undefined, // 나중에 실제 OCR로 교체
+          docImages: docImages.length > 0 ? docImages : undefined,
         }),
       });
 
@@ -109,18 +126,6 @@ export default function Home() {
   const today = new Date();
   const daysSince = purchaseDate ? daysBetween(purchaseDate, today) : 0;
 
-  const options = showOptions
-    ? {
-        warranty: daysSince <= 30 || formData.mileage <= 2000,
-        refund: diagnosisResult?.kahistory.accidents.length
-          ? "이력 근거로 검토"
-          : "사진·이력 기반 의심 시 검토",
-        personal:
-          (formData.riders || "").toLowerCase().includes("자차") ||
-          (formData.riders || "").toLowerCase().includes("자가"),
-      }
-    : null;
-
   return (
     <>
       <Header />
@@ -133,13 +138,7 @@ export default function Home() {
         />
         {diagnosisResult && <DiagnosisSection result={diagnosisResult} />}
         {showOptions && apiResponse && (
-          <OptionsSection
-            options={options}
-            channel={formData.channel}
-            daysSince={daysSince}
-            mileage={formData.mileage}
-            apiResponse={apiResponse}
-          />
+          <OptionsSection apiResponse={apiResponse} />
         )}
         {showPackager && (
           <PackagerSection

@@ -17,6 +17,7 @@ export interface OcrAnalysisResult {
     electric: string;
   };
   rawText: string;
+  confidence?: "high" | "low" | "retry"; // 신뢰도 필드 추가
 }
 
 export interface GeminiAnalysisRequest {

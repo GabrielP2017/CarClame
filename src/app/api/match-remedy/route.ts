@@ -1,7 +1,7 @@
 // src/app/api/match-remedy/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { evaluateAll, type MatchRemedyInput } from "@/lib/rules";
-import { analyzeCarImages, analyzeOcrText } from "@/lib/gemini";
+import { analyzeCarImages, analyzeDocumentImage } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       purchaseChannel,
       ocrText,
       carImages,
+      docImages,
     } = body ?? {};
 
     // --- 최소 유효성 검사(필수 필드) ---
@@ -70,13 +71,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // OCR 텍스트 분석
-    if (ocrText && typeof ocrText === "string" && ocrText.trim()) {
+    // 문서 이미지 직접 분석 (Vision)
+    if (docImages && Array.isArray(docImages) && docImages.length > 0) {
       try {
-        geminiOcrResult = await analyzeOcrText(ocrText);
-        console.log("Gemini OCR Analysis:", geminiOcrResult);
+        geminiOcrResult = await analyzeDocumentImage(docImages[0]);
+        console.log("Gemini Document Analysis:", geminiOcrResult);
       } catch (err) {
-        console.error("OCR analysis failed:", err);
+        console.error("Document analysis failed:", err);
       }
     }
 
@@ -97,8 +98,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (geminiOcrResult) {
+      // confidence 값 안전하게 가져오기
+      const confidence = geminiOcrResult.confidence || "high";
+
+      // confidence가 "retry"면 상태를 "재촬영 필요"로 변경
+      const ocrStatus =
+        confidence === "retry"
+          ? "재촬영 필요"
+          : geminiOcrResult.noAccidentMarked
+          ? "무사고 표기"
+          : "사고 표기";
+
       result.factCheck.ocr = {
-        status: geminiOcrResult.noAccidentMarked ? "무사고 표기" : "사고 표기",
+        status: ocrStatus,
         summary: `엔진:${geminiOcrResult.categories.engine}, 미션:${geminiOcrResult.categories.mission}`,
         evidence: [geminiOcrResult.rawText],
       };
@@ -113,7 +125,14 @@ export async function POST(req: NextRequest) {
     }
 
     // 최종 응답 반환
-    return NextResponse.json(result, { status: 200 });
+    // 최종 응답 반환
+    return NextResponse.json(
+      {
+        ...result,
+        geminiOcrResult, // Gemini OCR 결과 추가
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("API Route Error:", error);
     return NextResponse.json(

@@ -7,6 +7,13 @@ interface DiagnosisSectionProps {
   result: DiagnosisResult | null;
 }
 
+function getCategoryStyle(status: string): string {
+  if (status === "정상") return "";
+  if (status === "점검요") return "status-warning";
+  if (status === "불량") return "status-error";
+  return "";
+}
+
 export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
   if (!result) return null;
 
@@ -15,7 +22,22 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
       <h2>팩트체크 결과</h2>
       <div className="grid3">
         <div className="kahi panel">
-          <h3>카히스토리(목업)</h3>
+          <h3>카히스토리(참고용)</h3>
+          <div
+            style={{
+              background: "#fffbeb",
+              border: "1px solid #fcd34d",
+              borderRadius: "8px",
+              padding: "10px 12px",
+              marginBottom: "12px",
+              fontSize: "13px",
+              color: "#92400e",
+            }}
+          >
+            ⓘ 데모 버전: 카히스토리 API는 기업 제휴 필요
+            <br />
+            실제 서비스에서는 VIN 기반 자동 조회 제공 예정
+          </div>
           <div className="kv">
             <div className="row">
               <span>VIN</span>
@@ -47,21 +69,107 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
         </div>
 
         <div className="ocr panel">
-          <h3>기록부 OCR·불일치</h3>
-          <div className="kv">
-            <div className="row">
-              <span>기록부 표기</span>
-              <strong>
-                {result.ocr.noAccidentMarked ? "무사고" : "사고표기"}
-              </strong>
+          <h3>성능기록부 분석</h3>
+
+          {result.ocr.confidence === "retry" ? (
+            <div
+              style={{
+                background: "#fef2f2",
+                border: "2px solid #dc2626",
+                borderRadius: "8px",
+                padding: "16px",
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#dc2626",
+                fontWeight: "600",
+              }}
+            >
+              ⚠️ 이미지 인식 실패
+              <br />
+              성능점검기록부 사진을 더 선명하게 다시 촬영하여 업로드하세요
             </div>
-            {Object.entries(result.ocr.categories).map(([k, v]) => (
-              <div key={k} className="row">
-                <span>{k}</span>
-                <strong>{v}</strong>
+          ) : (
+            <>
+              {result.ocr.confidence === "low" && (
+                <div
+                  style={{
+                    background: "#fffbeb",
+                    border: "1px solid #fcd34d",
+                    borderRadius: "8px",
+                    padding: "8px 12px",
+                    marginBottom: "12px",
+                    fontSize: "13px",
+                    color: "#d97706",
+                  }}
+                >
+                  ⚠️ 인식 정확도 낮음: 아래 결과를 직접 확인하세요
+                </div>
+              )}
+
+              <div className="kv">
+                <div className="row">
+                  <span>사고 이력 표기</span>
+                  <strong
+                    style={{
+                      color: result.ocr.noAccidentMarked
+                        ? "#16a34a"
+                        : "#dc2626",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {result.ocr.noAccidentMarked ? "✓ 무사고" : "⚠ 사고 표기"}
+                  </strong>
+                </div>
+                <div className="row">
+                  <span>엔진 상태</span>
+                  <strong
+                    className={getCategoryStyle(result.ocr.categories.engine)}
+                  >
+                    {result.ocr.categories.engine}
+                  </strong>
+                </div>
+                <div className="row">
+                  <span>변속기 상태</span>
+                  <strong
+                    className={getCategoryStyle(result.ocr.categories.mission)}
+                  >
+                    {result.ocr.categories.mission}
+                  </strong>
+                </div>
+                <div className="row">
+                  <span>조향장치</span>
+                  <strong
+                    className={getCategoryStyle(result.ocr.categories.steering)}
+                  >
+                    {result.ocr.categories.steering}
+                  </strong>
+                </div>
+                <div className="row">
+                  <span>제동장치</span>
+                  <strong
+                    className={getCategoryStyle(result.ocr.categories.brake)}
+                  >
+                    {result.ocr.categories.brake}
+                  </strong>
+                </div>
+                <div className="row">
+                  <span>전기장치</span>
+                  <strong
+                    className={getCategoryStyle(result.ocr.categories.electric)}
+                  >
+                    {result.ocr.categories.electric}
+                  </strong>
+                </div>
               </div>
-            ))}
-          </div>
+            </>
+          )}
+
+          <p
+            className="hint"
+            style={{ fontSize: "12px", color: "#737373", marginTop: "8px" }}
+          >
+            ※ AI가 기록부 이미지에서 추출한 정보입니다.
+          </p>
         </div>
 
         <div className="photo panel">

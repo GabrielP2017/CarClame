@@ -66,6 +66,25 @@ export default function IntakeForm({
           />
         </div>
         <div className="field">
+          <label>구매(인도) 당시 주행거리(km)</label>
+          <input
+            type="number"
+            min="0"
+            value={formData.purchaseMileage || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              handleInputChange(
+                "purchaseMileage",
+                value === "" ? null : parseInt(value)
+              );
+            }}
+            placeholder="예: 42000 (선택사항)"
+          />
+          <small style={{ fontSize: "12px", color: "#737373" }}>
+            매매계약서 상의 인도 시점 주행거리 (2,000km 조건 판정용)
+          </small>
+        </div>
+        <div className="field">
           <label>판매 유형*</label>
           <select
             value={formData.channel}
@@ -81,13 +100,23 @@ export default function IntakeForm({
         </div>
 
         <div className="field">
-          <label>계약서·성능점검기록부 사진(OCR)</label>
+          <label>계약서·성능점검기록부 사진(OCR) - 1장만</label>
           <input
             type="file"
             accept="image/*,.pdf"
-            multiple
-            onChange={(e) => handleInputChange("docImages", e.target.files)}
+            onChange={(e) => {
+              const files = e.target.files;
+              if (files && files.length > 1) {
+                alert("성능점검기록부는 1장만 업로드 가능합니다.");
+                e.target.value = "";
+                return;
+              }
+              handleInputChange("docImages", files);
+            }}
           />
+          <small style={{ fontSize: "12px", color: "#737373" }}>
+            {formData.docImages?.length ? "✓ 1장 선택됨" : ""}
+          </small>
         </div>
 
         <details className="full">

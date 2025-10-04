@@ -10,13 +10,22 @@ export function mapApiToDiagnosis(api: any, form: FormData): DiagnosisResult {
     vin: form.vin || (api?.factCheck?.history?.vin ?? MOCK_KAHISTORY.vin),
   };
 
-  // 2) OCR: 상태 텍스트로 noAccidentMarked만 추정, 카테고리는 목업 기본값 유지
-  const ocrFromApi = String(api?.factCheck?.ocr?.status || "").trim();
-  const noAccident = ocrFromApi === "정상" || ocrFromApi === "무사고";
-  const ocr: OCRData = {
-    ...MOCK_OCR,
-    noAccidentMarked: noAccident,
-  };
+  // 2) OCR: API 응답 우선 사용, 없으면 MOCK
+  const geminiOcrResult = api?.geminiOcrResult || api?.factCheck?.ocr;
+
+  const ocr: OCRData = geminiOcrResult
+    ? {
+        noAccidentMarked: geminiOcrResult.noAccidentMarked ?? false,
+        categories: {
+          engine: geminiOcrResult.categories?.engine || "미확인",
+          mission: geminiOcrResult.categories?.mission || "미확인",
+          steering: geminiOcrResult.categories?.steering || "미확인",
+          brake: geminiOcrResult.categories?.brake || "미확인",
+          electric: geminiOcrResult.categories?.electric || "미확인",
+        },
+        confidence: geminiOcrResult.confidence || "high", // Gemini 결과 그대로 보존
+      }
+    : MOCK_OCR;
 
   // 3) 사진 결과 → API summary 파싱
   const photoSummary = String(api?.factCheck?.photo?.summary || "");

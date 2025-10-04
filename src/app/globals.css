@@ -237,3 +237,12 @@ details summary {
     box-shadow: none;
   }
 }
+
+.status-warning {
+  color: #ea580c !important;
+}
+
+.status-error {
+  color: #dc2626 !important;
+  font-weight: 700;
+}

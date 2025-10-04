@@ -21,12 +21,14 @@ export interface OCRData {
     brake: string;
     electric: string;
   };
+  confidence?: "high" | "low" | "retry"; // 추가
 }
 
 export interface FormData {
   vin: string;
   purchaseDate: string;
   mileage: number;
+  purchaseMileage?: number | null; // 구매시 주행거리 (선택)
   channel: string;
   docImages?: FileList;
   riders?: string;

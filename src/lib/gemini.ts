@@ -139,6 +139,139 @@ ${ocrText}`;
   }
 }
 
+// 문서 이미지 직접 분석 (Vision)
+export async function analyzeDocumentImage(
+  imageBase64: string
+): Promise<OcrAnalysisResult> {
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-exp",
+    generationConfig: {
+      temperature: 0.1,
+      topP: 0.8,
+      topK: 10,
+    },
+  });
+
+  const prompt = `You are analyzing a Korean vehicle inspection report (자동차 성능·상태 점검기록부).
+
+  **CRITICAL: Document Validation First**
+  Before analyzing, verify this is actually a vehicle inspection report:
+  - Must contain Korean text "성능" or "점검기록부" or "자동차"
+  - Must have a table structure with multiple rows and checkboxes
+  - Must NOT be a photo of a damaged car, accident scene, or random image
+  
+  If this is NOT a valid inspection report (e.g., just a car photo):
+  - Set ALL categories to "미확인"
+  - Set noAccidentMarked to false
+  - Set rawText to "문서 형식 불일치 - 성능점검기록부가 아님"
+  - Return immediately with this JSON structure
+  
+  This is a complex table-based document. Follow these steps:
+  
+  **STEP 1: Find accident history - CRITICAL LOCATION**
+  - Look at the BOTTOM LEFT of the document
+  - Find text "사고교환수리 등 이력" (Accident/Repair History)
+  - Below this text, there's a car diagram with 4 views
+  - IMMEDIATELY TO THE RIGHT of the car diagram, find:
+    * "사고이력" (Accident History) section
+    * Look for checkboxes: "□ 있음" (Yes) or "□ 없음" (No)
+  - If "없음" (No) is checked → noAccidentMarked = true
+  - If "있음" (Yes) is checked → noAccidentMarked = false
+  
+  **STEP 2: Locate component status table**
+  - This is on the RIGHT SIDE of the document
+  - Large vertical table with many checkboxes
+  - Each row = one component
+  
+  **STEP 3: Extract component status - CRITICAL RULES**
+  Find these sections in the right table:
+  
+  1. **전기** (Electric/Electrical) section:
+     - Look for rows with "전기" label
+     - Status indicators: "양호" (Good) / "교환" (Replace) / "불량" (Bad)
+     - If all items show "양호" → "정상"
+     - If any "교환" or "불량" → "점검요"
+  
+  2. **고전원 전기장치** (High-voltage electrical) section:
+     - This is SEPARATE from regular "전기"
+     - If NO checkmarks at all in this section → ignore it, use "전기" result
+     - If checkmarks exist → evaluate separately
+  
+  3. Other components (엔진/변속기/조향장치/제동장치):
+     - Find them in the right table
+     - Check if boxes are marked as "양호" or have check marks
+     - Default to "정상" if found with good indicators
+  
+  **IMPORTANT:**
+  - "전기" section with "양호" markings = "정상"
+  - Empty "고전원 전기장치" section = ignore it
+  - Focus on actual marked checkboxes, not empty ones
+  
+  Example output:
+  {
+    "noAccidentMarked": true,
+    "categories": {
+      "engine": "정상",
+      "mission": "정상",
+      "steering": "정상",
+      "brake": "정상",
+      "electric": "정상"
+    },
+    "rawText": "2013년 검사"
+  }
+  
+  Now analyze the image and output JSON only:`;
+  try {
+    const imagePart = {
+      inlineData: {
+        data: imageBase64.split(",")[1],
+        mimeType: "image/jpeg",
+      },
+    };
+
+    const result = await model.generateContent([prompt, imagePart]);
+    const text = result.response.text();
+
+    console.log("=== Gemini Document Response (Raw) ===");
+    console.log(text);
+    console.log("======================================");
+
+    // 코드블록 제거 (```json ``` 또는 ``` ```)
+    let cleanedText = text.replace(/```json\s*/g, "").replace(/```\s*/g, "");
+
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("Failed to extract JSON from response");
+      throw new Error("Invalid JSON response");
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    console.log("✓ Successfully parsed JSON:", parsed);
+
+    // 신뢰도 검증
+    const confidence = calculateConfidence(parsed);
+
+    return {
+      ...parsed,
+      confidence, // "high" | "low" | "retry"
+    };
+  } catch (error) {
+    console.error("Gemini document analysis error:", error);
+    return {
+      noAccidentMarked: false,
+      categories: {
+        engine: "미확인",
+        mission: "미확인",
+        steering: "미확인",
+        brake: "미확인",
+        electric: "미확인",
+      },
+      rawText: "이미지 분석 실패",
+      confidence: "retry", // 명시적으로 재촬영 요청
+    };
+  }
+}
+
 // 카히스토리 텍스트 분석
 export async function analyzeHistoryText(historyText: string) {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
@@ -183,4 +316,39 @@ ${historyText}`;
       accidents: [],
     };
   }
+}
+
+// OCR 결과 신뢰도 계산
+function calculateConfidence(
+  result: OcrAnalysisResult
+): "high" | "low" | "retry" {
+  const categories = result.categories;
+  const rawText = result.rawText || "";
+
+  // "미확인" 개수 세기
+  const unknownCount = Object.values(categories).filter(
+    (status) => status === "미확인"
+  ).length;
+
+  // **CRITICAL: 문서 형식 불일치 감지**
+  if (
+    rawText.includes("문서 형식 불일치") ||
+    rawText.includes("성능점검기록부가 아님") ||
+    rawText.includes("이미지 분석 실패")
+  ) {
+    return "retry";
+  }
+
+  // 모든 항목이 미확인 → 재촬영 필요
+  if (unknownCount === 5) {
+    return "retry";
+  }
+
+  // 3개 이상 미확인 → 낮은 신뢰도
+  if (unknownCount >= 3) {
+    return "low";
+  }
+
+  // 정상
+  return "high";
 }

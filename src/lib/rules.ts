@@ -78,12 +78,12 @@ function buildLiabilityReason(
   elapsedDays: number,
   usedKm: number | null
 ): string {
-  const dayPart = `구매 ${elapsedDays}일 경과`;
+  const dayPart = `구매 후 ${elapsedDays}일 경과`;
   const kmPart =
     usedKm == null
-      ? "주행거리 미입력 → km 판정 제외"
-      : `구매 후 주행 ${usedKm}km`;
-  return `${dayPart}. ${kmPart}`;
+      ? "구매시 주행거리 미기재 → 주행거리 조건 판정 불가"
+      : `구매 후 ${usedKm}km 주행`;
+  return `${dayPart} / ${kmPart}`;
 }
 
 // 판매사 환불 판정(브랜드별 3일/7일 적용)

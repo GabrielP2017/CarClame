@@ -55,13 +55,7 @@ body {
 
 .landing-shell {
   min-height: 100vh;
-  background: linear-gradient(
-    180deg,
-    #edf2ff 0%,
-    #edf2ff 420px,
-    #ffffff 420px,
-    #ffffff 100%
-  );
+  background: #ffffff;
   color: var(--dark);
   display: flex;
   flex-direction: column;
@@ -493,7 +487,7 @@ details summary {
 .landing-main {
   width: min(1120px, 100%);
   margin: 0 auto;
-  padding: clamp(32px, 6vw, 80px) clamp(20px, 5vw, 48px) 80px;
+  padding: 0 clamp(20px, 5vw, 48px) 80px;
   display: flex;
   flex-direction: column;
   gap: 48px;

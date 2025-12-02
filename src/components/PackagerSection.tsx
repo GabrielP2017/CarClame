@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Swal from "sweetalert2";
+import { readSavedPdfs, writeSavedPdfs } from "@/lib/pdfStorage";
 
 type DocType =
   | "common_insurance_claim"
@@ -39,6 +40,49 @@ const DOC_OPTIONS: { id: DocType; label: string; hint: string }[] = [
   },
 ];
 
+const blobToDataUrl = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Failed to convert PDF blob to base64"));
+      }
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+const persistPdfRecord = async (params: {
+  blob: Blob;
+  filename: string;
+  vin: string;
+  purchaseDate: string;
+  claimantName: string;
+  docs: string[];
+}) => {
+  if (typeof window === "undefined") return;
+  try {
+    const dataUrl = await blobToDataUrl(params.blob);
+    const record = {
+      id: window.crypto?.randomUUID?.() ?? String(Date.now()),
+      filename: params.filename,
+      vin: params.vin,
+      purchaseDate: params.purchaseDate,
+      claimantName: params.claimantName,
+      docs: params.docs,
+      createdAt: new Date().toISOString(),
+      dataUrl,
+    };
+    const existing = readSavedPdfs();
+    writeSavedPdfs([record, ...existing]);
+  } catch (error) {
+    console.warn("Failed to store PDF locally", error);
+  }
+};
+
 export default function PackagerSection({
   visible,
   vin,
@@ -68,7 +112,11 @@ export default function PackagerSection({
 
   const handleGeneratePackage = async () => {
     if (!claimantName || !claimantPhone) {
-      Swal.fire("입력 필요", "청구인 이름과 연락처를 입력해 주세요.", "warning");
+      Swal.fire(
+        "입력 필요",
+        "청구인 이름과 연락처를 입력해 주세요.",
+        "warning"
+      );
       return;
     }
     if (!purchaseDate) {
@@ -80,7 +128,11 @@ export default function PackagerSection({
       return;
     }
     if (selectedDocs.length === 0) {
-      Swal.fire("선택 필요", "생성할 서류를 최소 1종 이상 선택해 주세요.", "warning");
+      Swal.fire(
+        "선택 필요",
+        "생성할 서류를 최소 1종 이상 선택해 주세요.",
+        "warning"
+      );
       return;
     }
 
@@ -124,14 +176,23 @@ export default function PackagerSection({
       }
 
       const blob = await res.blob();
+      const filename = `서류패키지_${vin}_${purchaseDate}.pdf`;
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `서류패키지_${vin}_${purchaseDate}.pdf`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+      await persistPdfRecord({
+        blob,
+        filename,
+        vin,
+        purchaseDate,
+        claimantName,
+        docs: selectedDocs,
+      });
 
       Swal.fire("완료", "서류 패키지 PDF가 생성되었습니다.", "success");
     } catch (error) {
@@ -147,7 +208,11 @@ export default function PackagerSection({
   };
 
   const handleMailSend = () => {
-    Swal.fire("메일 전송 (목업)", "현재는 이메일 발송을 시뮬레이션합니다.", "info");
+    Swal.fire(
+      "메일 전송 (목업)",
+      "현재는 이메일 발송을 시뮬레이션합니다.",
+      "info"
+    );
   };
 
   const checklist = [
@@ -171,7 +236,7 @@ export default function PackagerSection({
       </div>
       <p className="analysis-lead">
         진단 결과를 바탕으로 보험·환불 청구에 필요한 문서 묶음을 자동으로
-        생성합니다. 상자 대신 구분선과 타이포만으로 흐름을 구성했습니다.
+        생성합니다.
       </p>
 
       <div className="analysis-columns analysis-columns--two">
@@ -278,7 +343,11 @@ export default function PackagerSection({
         >
           {isGenerating ? " 서류 생성 중…" : " 서류 패키지 PDF 생성"}
         </button>
-        <button className="btn outline" type="button" onClick={() => window.print()}>
+        <button
+          className="btn outline"
+          type="button"
+          onClick={() => window.print()}
+        >
           인쇄 / 저장
         </button>
         <button className="btn" type="button" onClick={handleMailSend}>

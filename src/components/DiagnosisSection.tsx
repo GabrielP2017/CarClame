@@ -177,7 +177,6 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
 
         <article className="analysis-column analysis-card">
           <p className="analysis-label">비전 AI</p>
-          <h3>사진 분석 요약</h3>
           <div>
             <span className="analysis-chip danger">위험 · 보상 대상</span>
             <ul className="bullets">

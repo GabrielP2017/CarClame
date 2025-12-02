@@ -44,7 +44,6 @@ export default function OptionsSection({ apiResponse }: OptionsSectionProps) {
       </div>
       <p className="analysis-lead">
         진단 결과를 근거로 가장 빠르게 접근할 수 있는 경로를 추천합니다.
-        박스가 아닌 타이포 레이어만으로 세 축을 나누어 집중도를 높였습니다.
       </p>
 
       {apiResponse.flags && apiResponse.flags.length > 0 && (
@@ -90,7 +89,9 @@ export default function OptionsSection({ apiResponse }: OptionsSectionProps) {
           <p className="analysis-body">
             {dealerRefund?.reason || "추가 정보가 필요합니다."}
           </p>
-          <p className="analysis-hint">K Car 3일 / 엔카 7일 / 침수 90일 (유형별 차이)</p>
+          <p className="analysis-hint">
+            K Car 3일 / 엔카 7일 / 침수 90일 (유형별 차이)
+          </p>
         </article>
 
         <article className="analysis-column analysis-card">

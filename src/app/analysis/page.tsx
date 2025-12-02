@@ -150,6 +150,10 @@ export default function AnalysisPage() {
   const docCount = formData.docImages?.length ?? 0;
   const photoCount = formData.inspectPhotos?.length ?? 0;
   const attachmentsTotal = docCount + photoCount;
+  const channelLabel = formData.channel || "구매 채널을 선택해 주세요";
+  const ridersLabel = formData.riders
+    ? `특약: ${formData.riders}`
+    : "선택 특약을 추가하면 검토 범위에 포함됩니다.";
   const stats = [
     {
       label: "구매 경과",
@@ -173,15 +177,16 @@ export default function AnalysisPage() {
         attachmentsTotal > 0 ? `${attachmentsTotal}개 첨부` : "아직 없음",
       meta: `OCR ${docCount} · 비전 ${photoCount}`,
     },
+    {
+      label: "구매 채널",
+      value: channelLabel,
+      meta: ridersLabel,
+    },
   ];
   const readinessLabel = formReady ? "즉시 실행 가능" : "필수 정보 대기";
   const readinessMeta = formReady
     ? "필수 항목이 모두 채워졌습니다."
     : "VIN, 구매일, 주행거리, 채널을 입력해 주세요.";
-  const channelLabel = formData.channel || "구매 채널을 선택해 주세요";
-  const ridersLabel = formData.riders
-    ? `특약: ${formData.riders}`
-    : "선택 특약을 추가하면 검토 범위에 포함됩니다.";
 
   return (
     <>
@@ -210,8 +215,7 @@ export default function AnalysisPage() {
         </div>
         <span className="marketing-center">CarClame</span>
       </header>
-      <div className="analysis-shell">
-        <main className="analysis-main">
+      <main className="analysis-main">
           <section className="analysis-hero">
             <div className="analysis-hero__body">
               <p className="eyebrow">Quick Analysis</p>
@@ -260,11 +264,6 @@ export default function AnalysisPage() {
                   </div>
                 ))}
               </div>
-              <div className="analysis-panel__footer">
-                <p className="analysis-panel__eyebrow">구매 채널</p>
-                <h4>{channelLabel}</h4>
-                <p className="analysis-panel__meta">{ridersLabel}</p>
-              </div>
             </aside>
           </section>
           <IntakeForm
@@ -307,8 +306,7 @@ export default function AnalysisPage() {
               apiResponse={apiResponse}
             />
           )}
-        </main>
-      </div>
+      </main>
       <footer className="footer__bar">© 2025 카클레임 Prototype</footer>
     </>
   );

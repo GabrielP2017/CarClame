@@ -111,6 +111,17 @@ body {
   color: var(--dark);
 }
 
+.marketing-nav__disabled {
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  font: inherit;
+  font-weight: 500;
+  color: rgba(15, 23, 42, 0.35);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .marketing-center {
   justify-self: center;
   grid-column: 2;
@@ -156,6 +167,15 @@ body {
   display: flex;
   gap: 14px;
   font-size: 14px;
+}
+
+.nav__link--disabled {
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .nav__links a {
@@ -2018,9 +2038,9 @@ details summary {
 
 .saved-pdf-hero__intro h1 {
   margin: 0;
-  font-size: clamp(30px, 4vw, 52px);
-  line-height: 1.05;
-  letter-spacing: -0.8px;
+  font-size: clamp(22px, 3vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
 }
 
 .saved-pdf-hero__intro p {

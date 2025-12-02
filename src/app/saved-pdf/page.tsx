@@ -15,7 +15,7 @@ const navLinks = [
   { label: "Quick Analysis", href: "/analysis" },
   { label: "PDF Archive", href: "/saved-pdf" },
   { label: "Help", href: "/help" },
-  { label: "About", href: "/about" },
+  { label: "About", href: "/about", disabled: true },
 ];
 
 const docLabels: Record<string, string> = {
@@ -180,11 +180,22 @@ export default function SavedPdfPage() {
             <Image src={titleIcon} alt="CarClame" width={36} height={36} />
           </Link>
           <nav className="marketing-nav">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) =>
+              link.disabled ? (
+                <button
+                  key={link.label}
+                  type="button"
+                  className="marketing-nav__disabled"
+                  disabled
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <Link key={link.href} href={link.href}>
+                  {link.label}
+                </Link>
+              )
+            )}
           </nav>
         </div>
         <span className="marketing-center">CarClame</span>
@@ -194,7 +205,7 @@ export default function SavedPdfPage() {
         <section className="saved-pdf-hero saved-pdf-section">
           <div className="saved-pdf-hero__intro">
             <p className="eyebrow">PDF Archive</p>
-            <h1>자동 분석으로 축적한 PDF 컨트롤 타워</h1>
+            <h1>자동 분석 PDF 아카이브</h1>
             <p>{subtitle}</p>
           </div>
 

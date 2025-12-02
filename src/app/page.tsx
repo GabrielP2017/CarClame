@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Quick Analysis", href: "/analysis" },
   { label: "PDF Archive", href: "/saved-pdf" },
   { label: "Help", href: "/help" },
-  { label: "About", href: "/about" },
+  { label: "About", href: "/about", disabled: true },
 ];
 
 const heroHighlights = [
@@ -255,11 +255,22 @@ export default function HomePage() {
             />
           </Link>
           <nav className="marketing-nav">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link) =>
+              link.disabled ? (
+                <button
+                  key={link.label}
+                  type="button"
+                  className="marketing-nav__disabled"
+                  disabled
+                >
+                  {link.label}
+                </button>
+              ) : (
+                <Link key={link.href} href={link.href}>
+                  {link.label}
+                </Link>
+              )
+            )}
           </nav>
         </div>
         <span className="marketing-center">CarClame</span>

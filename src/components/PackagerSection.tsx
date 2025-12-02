@@ -1,6 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Swal from "sweetalert2";
+
+// DocType에서 warranty_claim 제거
+type DocType =
+  | "common_insurance_claim"
+  | "dealer_refund"
+  | "consent"
+  | "power_of_attorney";
 
 interface PackagerSectionProps {
   visible: boolean;
@@ -9,129 +17,251 @@ interface PackagerSectionProps {
   apiResponse?: any;
 }
 
+// 옵션 리스트 수정
+const DOC_OPTIONS: { id: DocType; label: string; hint: string }[] = [
+  {
+    id: "common_insurance_claim",
+    label: "자동차 보험사 공통 청구서",
+    hint: "삼성화재 보험 청구 기본 양식",
+  },
+  {
+    id: "dealer_refund",
+    label: "판매사 환불 신청서",
+    hint: "K Car / 엔카 / 기타 판매사 환불 요구",
+  },
+  {
+    id: "consent",
+    label: "개인정보 동의서",
+    hint: "보험사/판매사 공통 필수에 가까움",
+  },
+  {
+    id: "power_of_attorney",
+    label: "위임장",
+    hint: "자신이 있는 구청에서 직접 발급 필요",
+  },
+];
+
 export default function PackagerSection({
   visible,
   vin,
   purchaseDate,
   apiResponse,
 }: PackagerSectionProps) {
+  const [claimantName, setClaimantName] = useState("");
+  const [claimantPhone, setClaimantPhone] = useState("");
+  const [claimantEmail, setClaimantEmail] = useState("");
+  const [claimantAddress, setClaimantAddress] = useState("");
+  const [accidentDate, setAccidentDate] = useState("");
+  
+  // 초기 선택값에서 warranty_claim 제거
+  const [selectedDocs, setSelectedDocs] = useState<DocType[]>([
+    "common_insurance_claim",
+    "dealer_refund",
+    "consent",
+    "power_of_attorney",
+  ]);
+  const [isGenerating, setIsGenerating] = useState(false);
+
   if (!visible) return null;
 
-  const makeDoc = (kind: string) => {
-    const title =
-      kind === "warranty"
-        ? "성능보증보험 청구서"
-        : kind === "refund"
-        ? "판매사 환불 신청서"
-        : "자동차보험 공통 서류";
+  const toggleDoc = (doc: DocType) => {
+    setSelectedDocs((prev) =>
+      prev.includes(doc) ? prev.filter((d) => d !== doc) : [...prev, doc]
+    );
+  };
 
-    const win = window.open("", "_blank");
-    if (!win) return;
+  const handleGeneratePackage = async () => {
+    if (!claimantName || !claimantPhone) {
+      Swal.fire("입력 필요", "신청인 이름과 연락처를 입력해 주세요.", "warning");
+      return;
+    }
+    if (!purchaseDate) {
+      Swal.fire("입력 필요", "구매일 정보가 없습니다.", "warning");
+      return;
+    }
+    if (!vin) {
+      Swal.fire("입력 필요", "차량번호/VIN 정보가 없습니다.", "warning");
+      return;
+    }
+    if (selectedDocs.length === 0) {
+      Swal.fire(
+        "선택 필요",
+        "생성할 서류 종류를 최소 1개 이상 선택해 주세요.",
+        "warning"
+      );
+      return;
+    }
 
-    win.document.write(`
-      <!DOCTYPE html>
-      <html lang="ko">
-      <head>
-        <meta charset="utf-8">
-        <title>${title}</title>
-        <style>
-          body{font-family:Pretendard,Arial,sans-serif;padding:24px;line-height:1.6}
-          h1{margin:0 0 12px 0} 
-          .kv{border:1px solid #ddd;border-radius:8px;padding:12px}
-          .kv div{display:flex;justify-content:space-between;border-bottom:1px dashed #e6e6e6;padding:6px 0}
-          .kv div:last-child{border-bottom:0}
-        </style>
-      </head>
-      <body>
-        <h1>${title}</h1>
-        <p>본 문서는 MVP 데모에서 자동 생성되었습니다. 실제 양식은 제출 기관의 요구 양식으로 대체됩니다.</p>
-        <div class="kv">
-          <div><span>식별자</span><strong>${vin}</strong></div>
-          <div><span>구매(인도)일</span><strong>${purchaseDate}</strong></div>
-          <div><span>작성일</span><strong>${new Date().toLocaleString()}</strong></div>
-        </div>
-        <p>근거 첨부: 계약서 사본, 성능점검기록부, 카히스토리 리포트, 사진 증빙 등</p>
-        <button onclick="window.print()">인쇄/저장</button>
-      </body>
-      </html>
-    `);
-    win.document.close();
+    setIsGenerating(true);
+    try {
+      const flags: string[] = Array.isArray(apiResponse?.flags)
+        ? apiResponse.flags
+        : [];
+
+      const purchaseChannel =
+        apiResponse?.purchaseChannel ??
+        apiResponse?.input?.purchaseChannel ??
+        undefined;
+
+      const body = {
+        claimantName,
+        claimantPhone,
+        claimantEmail,
+        claimantAddress,
+        vehicleId: vin,
+        vin,
+        purchaseDate,
+        accidentDate: accidentDate || undefined,
+        purchaseChannel,
+        docs: selectedDocs,
+        diagnosisFlags: flags,
+      };
+
+      const res = await fetch("/api/package", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const msg =
+          data?.message || `서류 생성 실패 (status ${res.status}) 입니다.`;
+        Swal.fire("실패", msg, "error");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `청구패키지_${vin}_${purchaseDate}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      Swal.fire("완료", "청구 패키지 PDF가 생성되었습니다.", "success");
+    } catch (error) {
+      console.error(error);
+      Swal.fire(
+        "에러",
+        "서류 패키지 생성 중 알 수 없는 오류가 발생했습니다.",
+        "error"
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleMailSend = () => {
-    Swal.fire({
-      icon: "info",
-      title: "메일 전송(목업)",
-      text: "DEMO: 실제 메일 연동은 API 연결 후 활성화됩니다.",
-    });
+    Swal.fire(
+      "메일 전송 (목업)",
+      "실제 이메일 발송 대신, 이 메시지만 표시합니다.",
+      "info"
+    );
   };
 
-  // ★ Gemini 분석 결과 기반 증빙 자료 자동 생성
-  const baseChecklist = [
-    "매매계약서/거래내역",
+  const checklist = [
+    "신분증 사본",
+    "매매계약서 / 거래내역",
     "자동차등록증 사본",
-    "성능·상태점검기록부 사본",
-    "카히스토리 이력 리포트(목업)",
+    // "성능·상태점검기록부 사본", // UI 상 체크리스트에서도 제거하는 편이 좋음 (선택사항)
+    "카히스토리 이력 리포트(목업 가능)",
+    "정비 명세서 / 수리 견적서",
+    "사고·하자 부위 사진",
   ];
 
-  const evidenceList = [];
-
-  // OCR 불량 항목 증빙
-  if (apiResponse?.geminiOcrResult?.categories) {
-    const badParts = Object.entries(apiResponse.geminiOcrResult.categories)
-      .filter(
-        ([_, status]: [string, any]) => status === "불량" || status === "점검요"
-      )
-      .map(([part, _]) => {
-        const partNames: any = {
-          engine: "엔진",
-          mission: "변속기",
-          steering: "조향장치",
-          brake: "제동장치",
-          electric: "전기장치",
-        };
-        return partNames[part] || part;
-      });
-
-    if (badParts.length > 0) {
-      evidenceList.push(`✓ 성능점검기록부 하자 확인: ${badParts.join(", ")}`);
-    }
-  }
-
-  // 사진 침수 증빙
-  if (apiResponse?.geminiImageResult?.criticalFindings?.length > 0) {
-    evidenceList.push(
-      `✓ 사진 증빙: ${apiResponse.geminiImageResult.criticalFindings.join(
-        ", "
-      )}`
-    );
-  } else {
-    evidenceList.push("차량 점검 사진(하체/엔진룸 등)");
-  }
-
-  const checklist = [...baseChecklist, ...evidenceList];
-
   return (
-    <section className="card">
-      <h2>청구 패키지</h2>
-      <div className="grid3">
-        <div className="panel">
-          <h3>성능보증보험 청구서</h3>
-          <button className="btn" onClick={() => makeDoc("warranty")}>
-            자동 작성
-          </button>
+    <section className="panel">
+      <h2>청구 패키지 자동 생성</h2>
+      <p className="sub">
+        진단 결과를 바탕으로, 보험·환불에 필요한 서류 패키지를 한 번에 생성합니다.
+      </p>
+
+      <div className="grid two">
+        <div className="panel soft">
+          <h3>신청인 / 사고 정보</h3>
+
+          <div className="field">
+            <label>신청인 이름</label>
+            <input
+              type="text"
+              value={claimantName}
+              onChange={(e) => setClaimantName(e.target.value)}
+              placeholder="예: 홍길동"
+            />
+          </div>
+
+          <div className="field">
+            <label>연락처</label>
+            <input
+              type="tel"
+              value={claimantPhone}
+              onChange={(e) => setClaimantPhone(e.target.value)}
+              placeholder="예: 010-1234-5678"
+            />
+          </div>
+
+          <div className="field">
+            <label>이메일 (선택)</label>
+            <input
+              type="email"
+              value={claimantEmail}
+              onChange={(e) => setClaimantEmail(e.target.value)}
+              placeholder="예: user@example.com"
+            />
+          </div>
+
+          <div className="field">
+            <label>주소 (선택)</label>
+            <input
+              type="text"
+              value={claimantAddress}
+              onChange={(e) => setClaimantAddress(e.target.value)}
+              placeholder="청구서 상 표기될 주소"
+            />
+          </div>
+
+          <div className="field">
+            <label>사고/하자 인지일 (선택)</label>
+            <input
+              type="date"
+              value={accidentDate}
+              onChange={(e) => setAccidentDate(e.target.value)}
+            />
+          </div>
+
+          <div className="meta">
+            <span>차량번호/VIN: {vin || "—"}</span>
+            <span>구매일: {purchaseDate || "—"}</span>
+          </div>
         </div>
-        <div className="panel">
-          <h3>판매사 환불 신청서</h3>
-          <button className="btn" onClick={() => makeDoc("refund")}>
-            자동 작성
-          </button>
-        </div>
-        <div className="panel">
-          <h3>자동차보험 공통 서류</h3>
-          <button className="btn" onClick={() => makeDoc("insurance")}>
-            자동 작성
-          </button>
+
+        <div className="panel soft">
+          <h3>생성할 서류 선택</h3>
+          <div className="tags">
+            {DOC_OPTIONS.map((doc) => (
+              <button
+                key={doc.id}
+                type="button"
+                className={
+                  selectedDocs.includes(doc.id) ? "tag active" : "tag"
+                }
+                onClick={() => toggleDoc(doc.id)}
+              >
+                {doc.label}
+              </button>
+            ))}
+          </div>
+
+          <ul className="bullets compact">
+            {DOC_OPTIONS.map((doc) => (
+              <li key={doc.id}>
+                <strong>{doc.label}:</strong> {doc.hint}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
@@ -145,11 +275,25 @@ export default function PackagerSection({
       </div>
 
       <div className="actions">
-        <button className="btn outline" onClick={() => window.print()}>
+        <button
+          className="btn primary"
+          type="button"
+          onClick={handleGeneratePackage}
+          disabled={isGenerating}
+        >
+          {isGenerating ? "서류 생성 중..." : "서류 패키지 PDF 생성"}
+        </button>
+
+        <button
+          className="btn outline"
+          type="button"
+          onClick={() => window.print()}
+        >
           <i className="ri-printer-line"></i> 인쇄/저장
         </button>
-        <button className="btn" onClick={handleMailSend}>
-          <i className="ri-mail-send-line"></i> 메일 전송(목업)
+
+        <button className="btn" type="button" onClick={handleMailSend}>
+          <i className="ri-mail-send-line"></i> 메일 전송 (목업)
         </button>
       </div>
     </section>

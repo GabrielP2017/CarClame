@@ -14,8 +14,8 @@ const navLinks = [
 
 const heroHighlights = [
   {
-    title: "VIN 자동 검증",
-    desc: "국내외 보증 · 사고 DB 크로스체크",
+    title: "PDF 자동화",
+    desc: "청구 서류·양식을 1분 내 패키징",
   },
   {
     title: "Vision AI",
@@ -34,9 +34,10 @@ const heroMetrics = [
 ];
 
 const heroPanelSteps = [
-  { title: "VIN Check", desc: "60만대 DB 대조", badge: "0.8s" },
+  { title: "PDF Auto Build", desc: "청구 양식 자동 생성", badge: "0.8s" },
   { title: "OCR Fact Check", desc: "불일치 필드 탐지", badge: "1.4s" },
   { title: "Vision Review", desc: "침수/사고 흔적 스캔", badge: "2.2s" },
+  { title: "PDF 저장", desc: "완성본 패키지 즉시 공유", badge: "Auto" },
 ];
 
 const problemPoints = [
@@ -624,35 +625,6 @@ export default function HomePage() {
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          className="content-section"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-15%" }}
-          variants={fadeUp}
-        >
-          <div className="section-head">
-            <div>
-              <p className="eyebrow">Team</p>
-              <h2>세 명의 엔지니어가 각자 핵심 축을 책임집니다.</h2>
-            </div>
-          </div>
-          <div className="roster">
-            {teamResponsibilities.map((member, idx) => (
-              <motion.div
-                key={member.title}
-                className="roster-item"
-                variants={fadeUp}
-                custom={idx * 0.2}
-              >
-                <p className="team-owner">{member.owner}</p>
-                <h3>{member.title}</h3>
-                <p>{member.body}</p>
               </motion.div>
             ))}
           </div>

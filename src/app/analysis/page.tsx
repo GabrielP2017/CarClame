@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import Header from "@/components/Header";
 import IntakeForm from "@/components/IntakeForm";
 import DiagnosisSection from "@/components/DiagnosisSection";
 import OptionsSection from "@/components/OptionsSection";
@@ -11,6 +12,14 @@ import { FormData, DiagnosisResult } from "@/types";
 import { daysBetween } from "@/lib/utils";
 import { mapApiToDiagnosis } from "@/lib/mapApiToDiagnosis";
 import Swal from "sweetalert2";
+import titleIcon from "@/img/TitleIcon.png";
+
+const navLinks = [
+  { label: "Quick Analysis", href: "/analysis" },
+  { label: "PDF Archive", href: "/saved-pdf" },
+  { label: "Help", href: "/help" },
+  { label: "About", href: "/about" },
+];
 
 export default function AnalysisPage() {
   const [formData, setFormData] = useState<FormData>({
@@ -128,7 +137,31 @@ export default function AnalysisPage() {
 
   return (
     <>
-      <Header />
+      <header className="marketing-header">
+        <div className="marketing-left">
+          <Link
+            href="/"
+            className="marketing-logo"
+            aria-label="CarClame 메인으로 이동"
+          >
+            <Image
+              src={titleIcon}
+              alt="CarClame"
+              width={36}
+              height={36}
+              priority
+            />
+          </Link>
+          <nav className="marketing-nav">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href}>
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+        <span className="marketing-center">CarClame</span>
+      </header>
       <main className="page">
         <IntakeForm
           formData={formData}

@@ -6,9 +6,9 @@ import { motion, type Variants } from "framer-motion";
 import titleIcon from "@/img/TitleIcon.png";
 
 const navLinks = [
-  { label: "자동분석", href: "/analysis" },
-  { label: "저장된 PDF", href: "/saved-pdf" },
-  { label: "도움말", href: "/help" },
+  { label: "Quick Analysis", href: "/analysis" },
+  { label: "PDF Archive", href: "/saved-pdf" },
+  { label: "Help", href: "/help" },
   { label: "About", href: "/about" },
 ];
 

@@ -1,14 +1,27 @@
 "use client";
 
+import Link from "next/link";
+
+const navLinks = [
+  { label: "자동분석", href: "/analysis" },
+  { label: "저장된 PDF", href: "/saved-pdf" },
+  { label: "도움말", href: "/help" },
+  { label: "About", href: "/about" },
+];
+
 export default function Header() {
   return (
     <header className="nav__header">
-      <div className="nav__logo">
-        <span className="brand">카클레임</span>
-      </div>
-      <div className="nav__menu__btn">
-        <i className="ri-shield-check-line"></i>
-      </div>
+      <Link href="/" className="nav__logo">
+        <span className="brand">CarClame</span>
+      </Link>
+      <nav className="nav__links">
+        {navLinks.map((link) => (
+          <Link key={link.href} href={link.href}>
+            {link.label}
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }

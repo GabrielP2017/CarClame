@@ -9,7 +9,7 @@ export async function analyzeCarImages(
   images: string[]
 ): Promise<ImageAnalysisResult> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.1, // 0에 가까울수록 일관성 높음 (0~2 범위)
       topP: 0.8,
@@ -87,7 +87,7 @@ minorFindings 예시: "범퍼 좌측 찍힘", "도어 도색 차이", "휠 스�
 export async function analyzeOcrText(
   ocrText: string
 ): Promise<OcrAnalysisResult> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `당신은 자동차 성능점검기록부를 분석하는 전문가입니다.
 
@@ -144,7 +144,7 @@ export async function analyzeDocumentImage(
   imageBase64: string
 ): Promise<OcrAnalysisResult> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-exp",
+    model: "gemini-2.5-flash",
     generationConfig: {
       temperature: 0.1,
       topP: 0.8,
@@ -274,7 +274,7 @@ export async function analyzeDocumentImage(
 
 // 카히스토리 텍스트 분석
 export async function analyzeHistoryText(historyText: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `당신은 자동차 이력 분석 전문가입니다.
 

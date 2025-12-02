@@ -12,6 +12,34 @@ const navLinks = [
   { label: "About", href: "/about" },
 ];
 
+const heroHighlights = [
+  {
+    title: "VIN 자동 검증",
+    desc: "국내외 보증 · 사고 DB 크로스체크",
+  },
+  {
+    title: "Vision AI",
+    desc: "침수/사고 흔적 0.1초당 추적",
+  },
+  {
+    title: "문서 OCR",
+    desc: "정비/보증 문서 15초 내 Fact Check",
+  },
+];
+
+const heroMetrics = [
+  { value: "97%", label: "위험 패턴 탐지 정확도" },
+  { value: "3분", label: "평균 청구 패키지 생성" },
+  { value: "24h", label: "데모 공유 SLA" },
+];
+
+const heroPanelSteps = [
+  { title: "VIN Check", desc: "60만대 DB 대조", badge: "0.8s" },
+  { title: "OCR Fact Check", desc: "불일치 필드 탐지", badge: "1.4s" },
+  { title: "Vision Review", desc: "침수/사고 흔적 스캔", badge: "2.2s" },
+];
+
+
 const problemPoints = [
   {
     title: "사고 이력 확인의 한계",
@@ -245,41 +273,105 @@ export default function HomePage() {
           variants={fadeUp}
         >
           <div className="hero-bg">
+            <div className="hero-gridlines" />
             <div className="hero-blur hero-blur-one" />
             <div className="hero-blur hero-blur-two" />
             <div className="scan-line" />
           </div>
           <div className="hero-inner">
-            <motion.p
-              className="hero-pill floating-pill"
-              variants={fadeUp}
-              custom={0}
-            >
-              확인에서 멈추지 말고, 바로 보상으로
-            </motion.p>
-            <motion.h1 variants={fadeUp} custom={1}>
-              중고차 보상까지
-              <br />
-              원스톱으로 연결합니다.
-            </motion.h1>
-            <motion.p className="hero-sub" variants={fadeUp} custom={2}>
-              투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단
-              결과가 곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
-            </motion.p>
-            <motion.div className="hero-cta" variants={fadeUp} custom={3}>
-              <Link href="/analysis" className="btn primary lg glow">
-                지금 바로 Fact Check
-              </Link>
-              <Link href="/saved-pdf" className="btn outline lg">
-                청구 패키지 샘플 보기
-              </Link>
-            </motion.div>
-            <motion.div className="hero-meta" variants={fadeUp} custom={4}>
-              <span>ⓘ 목업 데이터로 즉시 데모 가능</span>
-              <div className="meta-sep" />
-              <span>VIN · OCR · Vision AI 통합</span>
+            <div className="hero-layout">
+              <div className="hero-copy">
+                <motion.p
+                  className="hero-pill floating-pill"
+                  variants={fadeUp}
+                  custom={0}
+                >
+                  확인에서 멈추지 말고, 바로 보상으로
+                </motion.p>
+                <motion.h1 variants={fadeUp} custom={1}>
+                  중고차 보상까지
+                  <br />
+                  원스톱으로 연결합니다.
+                </motion.h1>
+                <motion.p className="hero-sub" variants={fadeUp} custom={2}>
+                  투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단
+                  결과가 곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
+                </motion.p>
+                <motion.div className="hero-cta" variants={fadeUp} custom={3}>
+                  <Link href="/analysis" className="btn primary lg glow">
+                    지금 바로 Fact Check
+                  </Link>
+                  <Link href="/saved-pdf" className="btn outline lg">
+                    청구 패키지 샘플 보기
+                  </Link>
+                </motion.div>
+                <motion.div className="hero-meta" variants={fadeUp} custom={4}>
+                  <span>ⓘ 목업 데이터로 즉시 데모 가능</span>
+                  <div className="meta-sep" />
+                  <span>VIN · OCR · Vision AI 통합</span>
+                </motion.div>
+              </div>
+              <motion.div
+                className="hero-panel"
+                variants={scaleIn}
+                custom={4}
+                whileHover={{ translateY: -6 }}
+              >
+                <div className="hero-panel__header">
+                  <span>실시간 Fact Check</span>
+                  <strong>Live Preview</strong>
+                </div>
+                <ul className="hero-panel__list">
+                  {heroPanelSteps.map((step) => (
+                    <li key={step.title} className="hero-panel__item">
+                      <span className="hero-panel__dot" />
+                      <div>
+                        <p>{step.title}</p>
+                        <small>{step.desc}</small>
+                      </div>
+                      <span className="hero-panel__badge">{step.badge}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            </div>
+            <motion.ul className="hero-checklist" variants={fadeUp} custom={5}>
+              {heroHighlights.map((item, idx) => (
+                <motion.li key={item.title} variants={fadeUp} custom={idx + 1}>
+                  <span className="hero-check-icon" />
+                  <div>
+                    <strong>{item.title}</strong>
+                    <p>{item.desc}</p>
+                  </div>
+                </motion.li>
+              ))}
+            </motion.ul>
+            <motion.div className="hero-metrics" variants={fadeUp} custom={6}>
+              {heroMetrics.map((metric) => (
+                <div key={metric.value} className="hero-metric">
+                  <strong>{metric.value}</strong>
+                  <span>{metric.label}</span>
+                </div>
+              ))}
             </motion.div>
           </div>
+          <motion.div
+            className="hero-orb hero-orb-one"
+            aria-hidden="true"
+            animate={{ y: [-10, 12, -10], rotate: [0, 8, 0] }}
+            transition={{ duration: 18, repeat: Infinity, repeatType: "mirror" }}
+          />
+          <motion.div
+            className="hero-orb hero-orb-two"
+            aria-hidden="true"
+            animate={{ y: [8, -12, 8], rotate: [0, -6, 0] }}
+            transition={{
+              duration: 22,
+              repeat: Infinity,
+              repeatType: "mirror",
+              delay: 2,
+            }}
+          />
         </motion.section>
 
         <div className="section-divider" aria-hidden="true" />

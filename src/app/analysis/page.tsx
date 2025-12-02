@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -149,6 +149,39 @@ export default function AnalysisPage() {
   );
   const docCount = formData.docImages?.length ?? 0;
   const photoCount = formData.inspectPhotos?.length ?? 0;
+  const attachmentsTotal = docCount + photoCount;
+  const stats = [
+    {
+      label: "구매 경과",
+      value: purchaseDate ? `${daysSince}일` : "대기 중",
+      meta: purchaseDateLabel || "구매일을 입력해 주세요",
+    },
+    {
+      label: "현재 주행거리",
+      value: formData.mileage
+        ? `${formData.mileage.toLocaleString()}km`
+        : "0km",
+      meta:
+        formData.purchaseMileage !== null &&
+        formData.purchaseMileage !== undefined
+          ? `구매 시 ${formData.purchaseMileage.toLocaleString()}km`
+          : "구매 시 주행거리 (선택)",
+    },
+    {
+      label: "첨부 상태",
+      value:
+        attachmentsTotal > 0 ? `${attachmentsTotal}개 첨부` : "아직 없음",
+      meta: `OCR ${docCount} · 비전 ${photoCount}`,
+    },
+  ];
+  const readinessLabel = formReady ? "즉시 실행 가능" : "필수 정보 대기";
+  const readinessMeta = formReady
+    ? "필수 항목이 모두 채워졌습니다."
+    : "VIN, 구매일, 주행거리, 채널을 입력해 주세요.";
+  const channelLabel = formData.channel || "구매 채널을 선택해 주세요";
+  const ridersLabel = formData.riders
+    ? `특약: ${formData.riders}`
+    : "선택 특약을 추가하면 검토 범위에 포함됩니다.";
 
   return (
     <>
@@ -180,67 +213,60 @@ export default function AnalysisPage() {
       <div className="analysis-shell">
         <main className="analysis-main">
           <section className="analysis-hero">
-          <div className="analysis-hero__copy">
-            <p className="eyebrow">자동 분석</p>
-            <h1>
-              한 번 입력하면
-              <br />
-              <span className="hero-title-main">팩트 체크</span> 워크플로우가
-              완성됩니다
-            </h1>
-            <p className="analysis-lead">
-              메인 페이지에서 쓰던 타이포 리듬을 그대로 옮겨와 간격과 경계선만으로
-              단계가 구분되도록 구성했습니다. 박스 없이도 AI 자동화 단계가
-              자연스럽게 이어집니다.
-            </p>
-            <p className="analysis-hero__note">
-              VIN, 구매일, 현재 주행거리, 구매 채널 네 가지만 입력하면 자동 분석이
-              시작되고 나머지 필드는 선택으로 둘 수 있습니다.
-            </p>
-          </div>
-          <div className="analysis-hero__metrics">
-            <div className="analysis-metric">
-              <span>구매 후 경과일</span>
-              <strong>
-                {purchaseDate ? `${daysSince}일` : "구매일을 입력해 주세요"}
-              </strong>
-              <small>{purchaseDateLabel || "구매일 입력 대기"}</small>
+            <div className="analysis-hero__body">
+              <p className="eyebrow">Quick Analysis</p>
+              <h1>
+                VIN 하나로
+                <br />
+                <span className="hero-title-main">자동 분석</span>을 시작하세요
+              </h1>
+              <p className="analysis-lead">
+                VIN, 구매일, 주행거리, 구매 채널 네 가지를 입력하면 OCR · 비전 ·
+                규칙 룰셋을 결합해 리스크와 대응책을 제안합니다.
+              </p>
+              <ul className="analysis-bullets">
+                <li>실시간 VIN 룩업과 구매 이력 검증</li>
+                <li>문서 · 차량 사진 자동 분류와 OCR 추출</li>
+                <li>결과 요약, 대응 옵션, 일정까지 한 번에</li>
+              </ul>
+              <div className="analysis-hero__cta">
+                <span className="analysis-pill success">약 3분 소요</span>
+                <span className="analysis-pill muted">추가 로그인 불필요</span>
+              </div>
+              <p className="analysis-hero__note">
+                입력 데이터는 세션 안에서만 유지되며 결과에서 바로 PDF 패키지를
+                저장할 수 있습니다.
+              </p>
             </div>
-            <div className="analysis-metric">
-              <span>현재 주행거리</span>
-              <strong>
-                {formData.mileage
-                  ? `${formData.mileage.toLocaleString()}km`
-                  : "0km"}
-              </strong>
-              <small>
-                {formData.purchaseMileage
-                  ? `구매 시점 ${formData.purchaseMileage.toLocaleString()}km`
-                  : "구매 시 주행거리(선택)"}
-              </small>
-            </div>
-            <div className="analysis-metric">
-              <span>첨부 현황</span>
-              <strong>
-                {docCount > 0 || photoCount > 0
-                  ? `${docCount + photoCount}건 업로드`
-                  : "첨부 없음"}
-              </strong>
-              <small>
-                OCR {docCount}건 / 비전 {photoCount}건
-              </small>
-            </div>
-            <div className="analysis-metric">
-              <span>팩트 체크 준비도</span>
-              <strong>{formReady ? "준비 완료" : "필수 항목 미입력"}</strong>
-              <small>
-                {formReady
-                  ? "모든 필수 입력 완료"
-                  : "VIN / 구매일 / 주행거리 / 채널 입력 필요"}
-              </small>
-            </div>
-          </div>
-        </section>
+            <aside className="analysis-hero__panel" aria-label="세션 요약">
+              <div className="analysis-panel__header">
+                <div>
+                  <p className="analysis-panel__eyebrow">세션 상태</p>
+                  <h3>{readinessLabel}</h3>
+                  <p className="analysis-panel__meta">{readinessMeta}</p>
+                </div>
+                <span
+                  className={`analysis-pill ${formReady ? "success" : "warning"}`}
+                >
+                  {formReady ? "READY" : "DRAFT"}
+                </span>
+              </div>
+              <div className="analysis-stats">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="analysis-stat">
+                    <span>{stat.label}</span>
+                    <strong>{stat.value}</strong>
+                    <small>{stat.meta}</small>
+                  </div>
+                ))}
+              </div>
+              <div className="analysis-panel__footer">
+                <p className="analysis-panel__eyebrow">구매 채널</p>
+                <h4>{channelLabel}</h4>
+                <p className="analysis-panel__meta">{ridersLabel}</p>
+              </div>
+            </aside>
+          </section>
           <IntakeForm
             formData={formData}
             setFormData={setFormData}
@@ -287,3 +313,4 @@ export default function AnalysisPage() {
     </>
   );
 }
+

@@ -55,7 +55,13 @@ body {
 
 .landing-shell {
   min-height: 100vh;
-  background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 60%, #eff2fb 100%);
+  background: linear-gradient(
+    180deg,
+    #edf2ff 0%,
+    #edf2ff 420px,
+    #ffffff 420px,
+    #ffffff 100%
+  );
   color: var(--dark);
   display: flex;
   flex-direction: column;
@@ -495,17 +501,43 @@ details summary {
 
 .hero {
   position: relative;
-  text-align: left;
+  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  overflow: hidden;
-  border-radius: 32px;
-  padding: clamp(32px, 6vw, 72px);
-  background: radial-gradient(circle at top, #f6f9ff 0%, #eef7ff 55%, #ffffff 100%);
-  border: 1px solid rgba(31, 41, 55, 0.08);
+  justify-content: center;
+  align-items: center;
+  gap: clamp(18px, 3vw, 32px);
+  overflow: visible;
+  border-radius: 0;
+  padding: clamp(80px, 10vh, 140px) 0;
+  min-height: clamp(520px, 80vh, 760px);
+  background: transparent;
   color: var(--dark);
-  box-shadow: 0 25px 80px rgba(15, 23, 42, 0.15);
+  box-shadow: none;
+  border: none;
+  isolation: isolate;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #eef3ff, #f8fbff);
+  z-index: -1;
+}
+
+.hero-inner {
+  max-width: 760px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 3vw, 32px);
+  align-items: center;
+  text-align: center;
+  padding: 0 clamp(20px, 5vw, 40px);
 }
 
 .hero h1 {
@@ -515,10 +547,7 @@ details summary {
 }
 
 .hero-bg {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 .hero-blur {
@@ -568,6 +597,7 @@ details summary {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+  justify-content: center;
 }
 
 .hero-pill {
@@ -605,6 +635,8 @@ details summary {
 .hero-meta {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 14px;
   font-size: 14px;
   color: rgba(15, 23, 42, 0.65);
@@ -1098,6 +1130,13 @@ details summary {
     @apply bg-background text-foreground;
   }
 }
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(15, 23, 42, 0.12);
+  margin: clamp(24px, 4vw, 48px) 0;
+}
+
 .section-head {
   display: flex;
   align-items: flex-end;

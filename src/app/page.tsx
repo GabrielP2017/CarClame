@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -249,36 +249,40 @@ export default function HomePage() {
             <div className="hero-blur hero-blur-two" />
             <div className="scan-line" />
           </div>
-          <motion.p
-            className="hero-pill floating-pill"
-            variants={fadeUp}
-            custom={0}
-          >
-            확인에서 멈추지 말고, 바로 보상으로
-          </motion.p>
-          <motion.h1 variants={fadeUp} custom={1}>
-            중고차 보상까지
-            <br />
-            원스톱으로 연결합니다.
-          </motion.h1>
-          <motion.p className="hero-sub" variants={fadeUp} custom={2}>
-            투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단
-            결과가 곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
-          </motion.p>
-          <motion.div className="hero-cta" variants={fadeUp} custom={3}>
-            <Link href="/analysis" className="btn primary lg glow">
-              지금 바로 Fact Check
-            </Link>
-            <Link href="/saved-pdf" className="btn outline lg">
-              청구 패키지 샘플 보기
-            </Link>
-          </motion.div>
-          <motion.div className="hero-meta" variants={fadeUp} custom={4}>
-            <span>ⓘ 목업 데이터로 즉시 데모 가능</span>
-            <div className="meta-sep" />
-            <span>VIN · OCR · Vision AI 통합</span>
-          </motion.div>
+          <div className="hero-inner">
+            <motion.p
+              className="hero-pill floating-pill"
+              variants={fadeUp}
+              custom={0}
+            >
+              확인에서 멈추지 말고, 바로 보상으로
+            </motion.p>
+            <motion.h1 variants={fadeUp} custom={1}>
+              중고차 보상까지
+              <br />
+              원스톱으로 연결합니다.
+            </motion.h1>
+            <motion.p className="hero-sub" variants={fadeUp} custom={2}>
+              투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단
+              결과가 곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
+            </motion.p>
+            <motion.div className="hero-cta" variants={fadeUp} custom={3}>
+              <Link href="/analysis" className="btn primary lg glow">
+                지금 바로 Fact Check
+              </Link>
+              <Link href="/saved-pdf" className="btn outline lg">
+                청구 패키지 샘플 보기
+              </Link>
+            </motion.div>
+            <motion.div className="hero-meta" variants={fadeUp} custom={4}>
+              <span>ⓘ 목업 데이터로 즉시 데모 가능</span>
+              <div className="meta-sep" />
+              <span>VIN · OCR · Vision AI 통합</span>
+            </motion.div>
+          </div>
         </motion.section>
+
+        <div className="section-divider" aria-hidden="true" />
 
         <motion.section
           className="content-section"
@@ -469,8 +473,9 @@ export default function HomePage() {
             <div>
               <p className="eyebrow">Competitive Edge</p>
               <h2>
-            진단에서 멈추는 기존 서비스와 달리, CarClame은 보상까지 닿습니다.
-          </h2>
+                진단에서 멈추는 기존 서비스와 달리, CarClame은 보상까지
+                닿습니다.
+              </h2>
             </div>
           </div>
           <div className="comparison-grid">

@@ -9,6 +9,14 @@ interface IntakeFormProps {
   isLoading?: boolean;
 }
 
+const riderOptions = [
+  { value: "자가", label: "자가 보증 (전손 처리)" },
+  { value: "침수", label: "침수 특약" },
+  { value: "자손", label: "자손 보험 (본인 피해)" },
+  { value: "의무이행", label: "의무이행 특약" },
+  { value: "기타", label: "기타 특약" },
+];
+
 export default function IntakeForm({
   formData,
   setFormData,
@@ -19,34 +27,58 @@ export default function IntakeForm({
     setFormData({ ...formData, [field]: value });
   };
 
+  const isRiderSelected = (token: string) =>
+    (formData.riders || "").includes(token);
+
+  const updateRider = (token: string, checked: boolean) => {
+    const current = formData.riders || "";
+    const next = checked
+      ? current
+        ? `${current}, ${token}`
+        : token
+      : current
+          .replace(new RegExp(`,?\\s*${token}`, "g"), "")
+          .replace(/^,\\s*/, "");
+    handleInputChange("riders", next);
+  };
+
   return (
-    <section className="card">
-      <h1>자동 분석 ▶ 구제 옵션 ▶ 서류 패키지</h1>
-      <p className="sub">
-        차량 정보 입력만으로 AI가 자동 분석 → 환불/보증/보험 경로 안내 → 서류
-        자동 생성까지 한 번에.
+    <section className="analysis-section analysis-form">
+      <div className="analysis-section__head">
+        <div>
+          <p className="eyebrow">1단계</p>
+          <h2>차량 기본 정보 입력</h2>
+        </div>
+        <span className="analysis-section__meta">
+          필수 항목: VIN / 구매일 / 주행거리 / 채널
+        </span>
+      </div>
+      <p className="analysis-lead">
+        필수 정보만 한 번 입력하면 OCR, 비전, 정책 룰셋을 조합해 실행 가능한
+        팩트 체크 결과를 돌려드립니다.
       </p>
 
       <form
+        className="analysis-form__grid"
         onSubmit={(e) => {
           e.preventDefault();
           onSubmit();
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* 필수 입력 - 2열 그리드 */}
+        <div className="analysis-form__group">
+          <p className="analysis-form__label">차량 기본</p>
           <div className="grid2">
             <div className="field">
-              <label>차량번호 (또는 VIN)*</label>
+              <label>차량번호 또는 VIN*</label>
               <input
                 value={formData.vin}
                 onChange={(e) => handleInputChange("vin", e.target.value)}
-                placeholder="예: 12가3456 또는 KMHxxxxxxxxx"
+                placeholder="예 12가3456 또는 KMHxxxxxxxxx"
                 required
               />
             </div>
             <div className="field">
-              <label>구매(인도)일*</label>
+              <label>구매(등록)일*</label>
               <input
                 type="date"
                 value={formData.purchaseDate}
@@ -68,7 +100,7 @@ export default function IntakeForm({
                 onChange={(e) =>
                   handleInputChange("mileage", parseInt(e.target.value))
                 }
-                placeholder="예: 42350"
+                placeholder="예 42350"
                 required
               />
             </div>
@@ -85,17 +117,20 @@ export default function IntakeForm({
                     value === "" ? null : parseInt(value)
                   );
                 }}
-                placeholder="예: 42000 (선택사항)"
+                placeholder="예 42000 (선택)"
               />
-              <small style={{ fontSize: "12px", color: "#737373" }}>
-                계약서에 적힌 인도 시점 주행거리
+              <small className="analysis-hint">
+                계약서에 기재된 최초 주행거리
               </small>
             </div>
           </div>
+        </div>
 
+        <div className="analysis-form__group">
+          <p className="analysis-form__label">구매 채널·문서</p>
           <div className="grid2">
             <div className="field">
-              <label>판매 유형*</label>
+              <label>구매 유형*</label>
               <select
                 value={formData.channel}
                 onChange={(e) => handleInputChange("channel", e.target.value)}
@@ -109,188 +144,84 @@ export default function IntakeForm({
               </select>
             </div>
             <div className="field">
-              <label>성능점검기록부 사진(OCR) - 1장만</label>
+              <label>성능점검기록부(OCR) - 1장</label>
               <input
                 type="file"
                 accept="image/*,.pdf"
                 onChange={(e) => {
                   const files = e.target.files;
                   if (files && files.length > 1) {
-                    alert("성능점검기록부는 1장만 업로드 가능합니다.");
+                    alert("성능점검기록부는 1장만 업로드가 가능합니다.");
                     e.target.value = "";
                     return;
                   }
                   handleInputChange("docImages", files);
                 }}
               />
-              <small style={{ fontSize: "12px", color: "#737373" }}>
-                {formData.docImages?.length ? "✓ 1장 선택됨" : ""}
+              <small className="analysis-hint">
+                {formData.docImages?.length ? "1건 업로드됨" : "미첨부"}
               </small>
             </div>
           </div>
+        </div>
 
-          {/* 선택 입력 */}
-          <details>
-            <summary>선택 입력 펼치기</summary>
-            <div
-              style={{
-                marginTop: "16px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-              }}
-            >
-              {/* 보험 특약 - 단독 영역 */}
-              <div className="field">
-                <label>가입한 보험 특약 (중복 선택 가능)</label>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    marginTop: "8px",
-                  }}
-                >
-                  <label className="checkbox-label">
+        <details className="analysis-form__details">
+          <summary>선택 증빙 · 특약 정보</summary>
+          <div className="analysis-form__stack">
+            <div className="field">
+              <label>가입한 보험 특약 (중복 선택 가능)</label>
+              <div className="analysis-checkbox-group">
+                {riderOptions.map((rider) => (
+                  <label key={rider.value} className="checkbox-label">
                     <input
                       type="checkbox"
-                      checked={(formData.riders || "").includes("자차")}
-                      onChange={(e) => {
-                        const current = formData.riders || "";
-                        const riders = e.target.checked
-                          ? current
-                            ? `${current}, 자차`
-                            : "자차"
-                          : current
-                              .replace(/,?\s*자차/g, "")
-                              .replace(/^,\s*/, "");
-                        handleInputChange("riders", riders);
-                      }}
+                      checked={isRiderSelected(rider.value)}
+                      onChange={(e) =>
+                        updateRider(rider.value, e.target.checked)
+                      }
                     />
-                    자차 담보 (내 차 수리비)
+                    {rider.label}
                   </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={(formData.riders || "").includes("침수")}
-                      onChange={(e) => {
-                        const current = formData.riders || "";
-                        const riders = e.target.checked
-                          ? current
-                            ? `${current}, 침수`
-                            : "침수"
-                          : current
-                              .replace(/,?\s*침수/g, "")
-                              .replace(/^,\s*/, "");
-                        handleInputChange("riders", riders);
-                      }}
-                    />
-                    침수 특약
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={(formData.riders || "").includes("자손")}
-                      onChange={(e) => {
-                        const current = formData.riders || "";
-                        const riders = e.target.checked
-                          ? current
-                            ? `${current}, 자손`
-                            : "자손"
-                          : current
-                              .replace(/,?\s*자손/g, "")
-                              .replace(/^,\s*/, "");
-                        handleInputChange("riders", riders);
-                      }}
-                    />
-                    자손 담보 (본인 상해)
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={(formData.riders || "").includes("타이어")}
-                      onChange={(e) => {
-                        const current = formData.riders || "";
-                        const riders = e.target.checked
-                          ? current
-                            ? `${current}, 타이어`
-                            : "타이어"
-                          : current
-                              .replace(/,?\s*타이어/g, "")
-                              .replace(/^,\s*/, "");
-                        handleInputChange("riders", riders);
-                      }}
-                    />
-                    타이어 특약
-                  </label>
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={(formData.riders || "").includes("기타")}
-                      onChange={(e) => {
-                        const current = formData.riders || "";
-                        const riders = e.target.checked
-                          ? current
-                            ? `${current}, 기타`
-                            : "기타"
-                          : current
-                              .replace(/,?\s*기타/g, "")
-                              .replace(/^,\s*/, "");
-                        handleInputChange("riders", riders);
-                      }}
-                    />
-                    기타 특약
-                  </label>
-                </div>
-                <small
-                  style={{
-                    fontSize: "12px",
-                    color: "#737373",
-                    marginTop: "8px",
-                    display: "block",
-                  }}
-                >
-                  {formData.riders ? `선택: ${formData.riders}` : "미선택"}
-                </small>
+                ))}
               </div>
-
-              {/* 사진/견적서 - grid2로 2열 */}
-              {/* 점검 사진 */}
-              <div className="field">
-                <label>점검 사진(하체 녹/흙탕물 흔적) - 최대 5장</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => {
-                    const files = e.target.files;
-                    if (files && files.length > 5) {
-                      alert("최대 5장까지만 업로드 가능합니다.");
-                      e.target.value = "";
-                      return;
-                    }
-                    handleInputChange("inspectPhotos", files);
-                  }}
-                />
-                <small style={{ fontSize: "12px", color: "#737373" }}>
-                  {formData.inspectPhotos?.length || 0}/5 장 선택됨
-                </small>
-              </div>
+              <small className="analysis-hint">
+                {formData.riders ? `선택: ${formData.riders}` : "미선택"}
+              </small>
             </div>
-          </details>
 
-          {/* 제출 버튼 */}
-          <div className="actions">
-            <button
-              type="submit"
-              className="btn primary"
-              disabled={!!isLoading}
-              aria-busy={!!isLoading}
-            >
-              <i className="ri-search-line"></i>
-              {isLoading ? " 분석 중…" : " 자동 분석 시작"}
-            </button>
+            <div className="field">
+              <label>차량 사진(외관/하부) - 최대 5장</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  const files = e.target.files;
+                  if (files && files.length > 5) {
+                    alert("최대 5장까지 업로드가 가능합니다.");
+                    e.target.value = "";
+                    return;
+                  }
+                  handleInputChange("inspectPhotos", files);
+                }}
+              />
+              <small className="analysis-hint">
+                {formData.inspectPhotos?.length || 0}/5 선택
+              </small>
+            </div>
           </div>
+        </details>
+
+        <div className="analysis-form__actions">
+          <button
+            type="submit"
+            className="btn primary"
+            disabled={!!isLoading}
+            aria-busy={!!isLoading}
+          >
+            <i className="ri-search-line" />
+            {isLoading ? " 분석 중…" : " 자동 분석 시작"}
+          </button>
         </div>
       </form>
     </section>

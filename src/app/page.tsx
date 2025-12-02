@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { motion, type Variants } from "framer-motion";
 import titleIcon from "@/img/TitleIcon.png";
 
 const navLinks = [
@@ -12,11 +15,11 @@ const navLinks = [
 const problemPoints = [
   {
     title: "사고 이력 확인의 한계",
-    body: "카히스토리 등으로 사고·침수 이력을 확인해도 실제 권리 행사와 보상으로 이어지지 않습니다.",
+    body: "카히스토리로 사고·침수 이력을 확인해도 실제 보상으로 이어지지 않는 경우가 대부분입니다.",
   },
   {
     title: "제각각인 마감 기한",
-    body: "K Car(3일), 엔카(7일) 등 플랫폼마다 보증 기한이 달라 소비자가 놓치기 쉽습니다.",
+    body: "K Car 3일, 엔카 7일 등 플랫폼마다 보증 기한이 달라 소비자가 기회를 놓치기 쉽습니다.",
   },
   {
     title: "복잡한 청구 절차",
@@ -36,22 +39,10 @@ const solutionHighlights = [
 ];
 
 const strategySteps = [
-  {
-    title: "팩트 체크",
-    desc: "OCR & Vision AI로 서류·사진 정밀 진단",
-  },
-  {
-    title: "옵션 매칭",
-    desc: "환불/책임보험 등 최적 보상 경로 자동 추천",
-  },
-  {
-    title: "패키징",
-    desc: "청구서 자동 생성 및 증빙 서류 번들링",
-  },
-  {
-    title: "전환 UX",
-    desc: "마감 카운트다운 & 원클릭 제출 유도",
-  },
+  { title: "팩트 체크", desc: "OCR & Vision AI로 서류·사진 정밀 진단" },
+  { title: "옵션 매칭", desc: "환불/책임보험 등 최적 보상 경로 추천" },
+  { title: "패키징", desc: "청구서 자동 생성 및 증빙 서류 번들링" },
+  { title: "전환 UX", desc: "마감 카운트다운 & 원클릭 제출 유도" },
 ];
 
 const flowSteps = [
@@ -61,7 +52,7 @@ const flowSteps = [
   },
   {
     label: "AI 분석",
-    detail: "차량 상태 및 보험 적용 여부를 판단하고 위험도를 점수화합니다.",
+    detail: "차량 상태와 보험 적용 여부를 판단하고 위험도를 수치화합니다.",
   },
   {
     label: "청구서 생성",
@@ -77,7 +68,7 @@ const keyFeatures = [
   {
     tag: "History",
     title: "차량 이력 통합",
-    body: "카히스토리와 연동해 사고, 침수, 도난, 전손 이력을 한 번에 확인합니다.",
+    body: "카히스토리와 연동해 사고, 침수, 도난, 전손 등 보험 기반 이력을 한 번에 확인합니다.",
   },
   {
     tag: "OCR",
@@ -87,7 +78,7 @@ const keyFeatures = [
   {
     tag: "Vision",
     title: "사진 AI 분석",
-    body: "흙탕물 라인, 하부 녹, 변색 등을 Vision AI로 감지해 침수 의심 지수를 산출합니다.",
+    body: "흙탕물 라인, 하부 녹 등을 Vision AI로 감지해 침수 의심 지수를 산출합니다.",
   },
   {
     tag: "Doc Ops",
@@ -105,12 +96,12 @@ const marketFacts = [
   {
     label: "보증 기한 편차",
     value: "3~7일",
-    detail: "플랫폼별 규정이 달라 소비자 혼란",
+    detail: "플랫폼마다 규정이 달라 소비자 혼란",
   },
   {
-    label: "목표",
-    value: "확인 → 보상 전환",
-    detail: "단순 진단을 넘어 보상 성사율 향상",
+    label: "우리가 푸는 문제",
+    value: "확인 → 보상",
+    detail: "단순 진단을 넘어 실질 보상 성사율 향상",
   },
 ];
 
@@ -123,7 +114,7 @@ const comparisonRows = [
   },
   {
     metric: "기술력",
-    carclame: "AI 통합 분석 (OCR + 이미지)",
+    carclame: "AI 통합 분석 (OCR+이미지)",
     kcar: "전문 인력 육안 진단",
     encar: "성능점검장 제휴 진단",
   },
@@ -153,7 +144,7 @@ const businessModels = [
   {
     segment: "B2B (제휴/기업)",
     items: [
-      "API 구독: 화이트라벨 솔루션",
+      "API 구독: 플랫폼용 화이트라벨 솔루션",
       "제휴 수수료: 정비소 연결 (CPL/CPA)",
       "보험 연계: 특약 가입/정산 수익",
     ],
@@ -163,27 +154,59 @@ const businessModels = [
 const teamResponsibilities = [
   {
     title: "데이터 & 로직",
-    body: "외부 데이터(OCR)를 가져와 시스템에 맞게 가공하고 불일치를 탐지하는 핵심 로직을 구축합니다.",
+    body: "외부 데이터(OCR)를 가공해 시스템에 맞게 적재하고 불일치를 탐지하는 로직을 맡습니다.",
     owner: "이강민",
   },
   {
     title: "비즈니스 규칙",
-    body: "진단 결과에 따라 환불/보증 기간 등 규칙을 적용하고 PDF 청구 패키지를 생성합니다.",
+    body: "진단 결과를 바탕으로 환불/보증 기간 등 규칙을 적용하고 PDF 청구 패키지를 생성합니다.",
     owner: "이승엽",
   },
   {
     title: "UX / UI & 전달",
-    body: "사용자 인증, 제출 트래킹, 결과물을 전달하는 UX/UI를 책임집니다.",
+    body: "사용자 인증, 제출 트래킹, 결과물 전달 등 전체 UX/UI를 책임집니다.",
     owner: "이동민",
   },
 ];
 
 const roadmap = [
-  { phase: "v0.1 (2주)", detail: "MVP 구현 – 목업 데이터 진단, PDF 생성" },
-  { phase: "v0.2 (4주)", detail: "OCR 정밀도 향상, 타임라인 캘린더" },
-  { phase: "v0.3 (6~8주)", detail: "API 제공, 화이트라벨 테스트, 제휴 온보딩" },
-  { phase: "v1.0 (런칭)", detail: "실제 연동, 결제 시스템, 제출 상태 트래킹" },
+  { phase: "v0.1 (2주)", detail: "MVP 구현 · 목업 데이터 진단 & PDF 생성" },
+  { phase: "v0.2 (4주)", detail: "OCR 정밀도 향상 · 타임라인 캘린더" },
+  {
+    phase: "v0.3 (6~8주)",
+    detail: "API 제공 · 화이트라벨 테스트 · 제휴 온보딩",
+  },
+  {
+    phase: "v1.0 (런칭)",
+    detail: "실제 연동 · 결제 시스템 · 제출 상태 트래킹",
+  },
 ];
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (custom = 1) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: custom * 0.08,
+      duration: 0.6,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  }),
+};
+
+const scaleIn: Variants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: (custom = 1) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      delay: custom * 0.06,
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  }),
+};
 
 export default function HomePage() {
   return (
@@ -215,128 +238,221 @@ export default function HomePage() {
       </header>
 
       <main className="landing-main">
-        <section className="hero">
-          <p className="hero-pill">확인에서 멈추지 말고, 바로 보상으로</p>
-          <h1>
+        <motion.section
+          className="hero"
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+        >
+          <div className="hero-bg">
+            <div className="hero-blur hero-blur-one" />
+            <div className="hero-blur hero-blur-two" />
+            <div className="scan-line" />
+          </div>
+          <motion.p
+            className="hero-pill floating-pill"
+            variants={fadeUp}
+            custom={0}
+          >
+            확인에서 멈추지 말고, 바로 보상으로
+          </motion.p>
+          <motion.h1 variants={fadeUp} custom={1}>
             중고차 보상까지
             <br />
             원스톱으로 연결합니다.
-          </h1>
-          <p className="hero-sub">
-            투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단 결과가
-            곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
-          </p>
-          <div className="hero-cta">
-            <Link href="/analysis" className="btn primary lg">
+          </motion.h1>
+          <motion.p className="hero-sub" variants={fadeUp} custom={2}>
+            투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단
+            결과가 곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
+          </motion.p>
+          <motion.div className="hero-cta" variants={fadeUp} custom={3}>
+            <Link href="/analysis" className="btn primary lg glow">
               지금 바로 Fact Check
             </Link>
             <Link href="/saved-pdf" className="btn outline lg">
               청구 패키지 샘플 보기
             </Link>
-          </div>
-          <div className="hero-meta">
+          </motion.div>
+          <motion.div className="hero-meta" variants={fadeUp} custom={4}>
             <span>ⓘ 목업 데이터로 즉시 데모 가능</span>
             <div className="meta-sep" />
             <span>VIN · OCR · Vision AI 통합</span>
-          </div>
-        </section>
+          </motion.div>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section glass-slab"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-20%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Problem</p>
           <h2>“알고도 당하고, 몰라서 못 받는다”</h2>
           <div className="problem-grid">
-            {problemPoints.map((item) => (
-              <article key={item.title}>
+            {problemPoints.map((item, idx) => (
+              <motion.article
+                key={item.title}
+                variants={fadeUp}
+                custom={idx * 0.4}
+                whileHover={{
+                  y: -6,
+                  boxShadow: "0 12px 30px rgba(15,23,42,0.12)",
+                }}
+              >
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-20%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Solution</p>
           <h2>사실 확인부터 보상 청구까지 한 번에</h2>
           <div className="split">
-            {solutionHighlights.map((item) => (
-              <article key={item.title}>
+            {solutionHighlights.map((item, idx) => (
+              <motion.article
+                key={item.title}
+                variants={scaleIn}
+                custom={idx * 0.3}
+                whileHover={{ translateY: -6 }}
+              >
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">4-Step Strategy</p>
           <h2>현장 workflow를 그대로 디지털화</h2>
           <div className="strategy-grid">
             {strategySteps.map((step, index) => (
-              <article key={step.title}>
+              <motion.article
+                key={step.title}
+                variants={fadeUp}
+                custom={index * 0.3}
+              >
                 <div className="timeline-index">{index + 1}</div>
                 <div>
                   <strong>{step.title}</strong>
                   <p>{step.desc}</p>
                 </div>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Service Flow</p>
           <h2>사용자는 복잡한 입력 없이 결과만 받습니다.</h2>
           <div className="timeline simple">
             {flowSteps.map((step, index) => (
-              <div key={step.label} className="timeline-step">
+              <motion.div
+                key={step.label}
+                className="timeline-step"
+                variants={fadeUp}
+                custom={index * 0.3}
+              >
                 <div className="timeline-index">{index + 1}</div>
                 <div>
                   <strong>{step.label}</strong>
                   <p>{step.detail}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="feature-stack">
-          <div className="stack-copy">
+        <motion.section
+          className="feature-stack glass-slab"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
+          <motion.div className="stack-copy" variants={fadeUp}>
             <p className="eyebrow">Key Features</p>
             <h2>세 가지 데이터 소스를 묶어 실질적 증거를 만듭니다.</h2>
             <p>
-              카히스토리 + 문서 OCR + 사진 AI를 결합해 “단순 확인”을 넘어 “보상
+              카히스토리 + 문서 OCR + 사진 AI가 결합돼 “단순 확인”을 넘어 “보상
               가능성이 보이는” 리포트를 만듭니다. 이 결과는 곧바로 청구 패키지로
               재사용됩니다.
             </p>
-          </div>
+          </motion.div>
           <div className="stack-card-grid">
-            {keyFeatures.map((feature) => (
-              <article key={feature.title} className="stack-card">
+            {keyFeatures.map((feature, idx) => (
+              <motion.article
+                key={feature.title}
+                className="stack-card"
+                variants={scaleIn}
+                custom={idx * 0.2}
+                whileHover={{ translateY: -8 }}
+              >
                 <span>{feature.tag}</span>
                 <h3>{feature.title}</h3>
                 <p>{feature.body}</p>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Market</p>
           <h2>폭발적으로 성장하는 시장, 아직 비어있는 보상 OS</h2>
           <div className="highlight-grid">
-            {marketFacts.map((fact) => (
-              <article key={fact.label}>
+            {marketFacts.map((fact, idx) => (
+              <motion.article
+                key={fact.label}
+                variants={fadeUp}
+                custom={idx * 0.2}
+                whileHover={{ scale: 1.02 }}
+              >
                 <p>{fact.label}</p>
                 <strong>{fact.value}</strong>
                 <span>{fact.detail}</span>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section glass-slab"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Competitive Edge</p>
-          <h2>진단에서 멈추는 기존 서비스와 달리, CarClame은 보상까지 닿습니다.</h2>
+          <h2>
+            진단에서 멈추는 기존 서비스와 달리, CarClame은 보상까지 닿습니다.
+          </h2>
           <div className="comparison-grid">
             <div className="comparison-header">
               <span>구분</span>
@@ -344,63 +460,101 @@ export default function HomePage() {
               <span>K Car</span>
               <span>엔카</span>
             </div>
-            {comparisonRows.map((row) => (
-              <div key={row.metric} className="comparison-row">
+            {comparisonRows.map((row, idx) => (
+              <motion.div
+                key={row.metric}
+                className="comparison-row"
+                variants={fadeUp}
+                custom={idx * 0.2}
+              >
                 <span>{row.metric}</span>
                 <span>{row.carclame}</span>
                 <span>{row.kcar}</span>
                 <span>{row.encar}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Business Model</p>
           <h2>B2C와 B2B가 맞물리는 구조</h2>
           <div className="business-grid">
-            {businessModels.map((model) => (
-              <article key={model.segment}>
+            {businessModels.map((model, idx) => (
+              <motion.article
+                key={model.segment}
+                variants={scaleIn}
+                custom={idx * 0.2}
+                whileHover={{ translateY: -8 }}
+              >
                 <h3>{model.segment}</h3>
                 <ul>
                   {model.items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section gradient-border"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Team</p>
           <h2>세 명의 엔지니어가 각자 핵심 축을 책임집니다.</h2>
           <div className="team-grid">
-            {teamResponsibilities.map((member) => (
-              <article key={member.title}>
+            {teamResponsibilities.map((member, idx) => (
+              <motion.article
+                key={member.title}
+                variants={fadeUp}
+                custom={idx * 0.2}
+                whileHover={{ translateY: -5 }}
+              >
                 <p className="team-owner">{member.owner}</p>
                 <h3>{member.title}</h3>
                 <p>{member.body}</p>
-              </article>
+              </motion.article>
             ))}
           </div>
-        </section>
+        </motion.section>
 
-        <section className="content-section">
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
           <p className="eyebrow">Roadmap</p>
           <h2>8주 안에 제휴 가능한 수준으로 성장</h2>
           <div className="timeline simple">
             {roadmap.map((item, index) => (
-              <div key={item.phase} className="timeline-step">
+              <motion.div
+                key={item.phase}
+                className="timeline-step"
+                variants={fadeUp}
+                custom={index * 0.2}
+              >
                 <div className="timeline-index">{index + 1}</div>
                 <div>
                   <strong>{item.phase}</strong>
                   <p>{item.detail}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </section>
+        </motion.section>
       </main>
 
       <section className="cta-band">

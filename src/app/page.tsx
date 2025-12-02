@@ -281,28 +281,29 @@ export default function HomePage() {
         </motion.section>
 
         <motion.section
-          className="content-section glass-slab"
+          className="content-section"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-20%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Problem</p>
-          <h2>“알고도 당하고, 몰라서 못 받는다”</h2>
-          <div className="problem-grid">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Problem</p>
+              <h2>“알고도 당하고, 몰라서 못 받는다”</h2>
+            </div>
+          </div>
+          <div className="lined-grid three">
             {problemPoints.map((item, idx) => (
-              <motion.article
+              <motion.div
                 key={item.title}
+                className="lined-item"
                 variants={fadeUp}
                 custom={idx * 0.4}
-                whileHover={{
-                  y: -6,
-                  boxShadow: "0 12px 30px rgba(15,23,42,0.12)",
-                }}
               >
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
-              </motion.article>
+              </motion.div>
             ))}
           </div>
         </motion.section>
@@ -314,19 +315,23 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-20%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Solution</p>
-          <h2>사실 확인부터 보상 청구까지 한 번에</h2>
-          <div className="split">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Solution</p>
+              <h2>사실 확인부터 보상 청구까지 한 번에</h2>
+            </div>
+          </div>
+          <div className="lined-grid two">
             {solutionHighlights.map((item, idx) => (
-              <motion.article
+              <motion.div
                 key={item.title}
+                className="lined-item"
                 variants={scaleIn}
                 custom={idx * 0.3}
-                whileHover={{ translateY: -6 }}
               >
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
-              </motion.article>
+              </motion.div>
             ))}
           </div>
         </motion.section>
@@ -338,21 +343,26 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-15%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">4-Step Strategy</p>
-          <h2>현장 workflow를 그대로 디지털화</h2>
-          <div className="strategy-grid">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">4-Step Strategy</p>
+              <h2>현장 workflow를 그대로 디지털화</h2>
+            </div>
+          </div>
+          <div className="numbered-list">
             {strategySteps.map((step, index) => (
-              <motion.article
+              <motion.div
                 key={step.title}
+                className="numbered-item"
                 variants={fadeUp}
                 custom={index * 0.3}
               >
-                <div className="timeline-index">{index + 1}</div>
+                <span className="numbered-index">{index + 1}</span>
                 <div>
                   <strong>{step.title}</strong>
                   <p>{step.desc}</p>
                 </div>
-              </motion.article>
+              </motion.div>
             ))}
           </div>
         </motion.section>
@@ -364,17 +374,21 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-15%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Service Flow</p>
-          <h2>사용자는 복잡한 입력 없이 결과만 받습니다.</h2>
-          <div className="timeline simple">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Service Flow</p>
+              <h2>사용자는 복잡한 입력 없이 결과만 받습니다.</h2>
+            </div>
+          </div>
+          <div className="numbered-list subtle">
             {flowSteps.map((step, index) => (
               <motion.div
                 key={step.label}
-                className="timeline-step"
+                className="numbered-item"
                 variants={fadeUp}
                 custom={index * 0.3}
               >
-                <div className="timeline-index">{index + 1}</div>
+                <span className="numbered-index">{index + 1}</span>
                 <div>
                   <strong>{step.label}</strong>
                   <p>{step.detail}</p>
@@ -385,7 +399,7 @@ export default function HomePage() {
         </motion.section>
 
         <motion.section
-          className="feature-stack glass-slab"
+          className="feature-stack"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-15%" }}
@@ -400,14 +414,13 @@ export default function HomePage() {
               재사용됩니다.
             </p>
           </motion.div>
-          <div className="stack-card-grid">
+          <div className="stack-card-grid lined-grid two">
             {keyFeatures.map((feature, idx) => (
               <motion.article
                 key={feature.title}
-                className="stack-card"
+                className="stack-card lined-item"
                 variants={scaleIn}
                 custom={idx * 0.2}
-                whileHover={{ translateY: -8 }}
               >
                 <span>{feature.tag}</span>
                 <h3>{feature.title}</h3>
@@ -424,15 +437,18 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-15%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Market</p>
-          <h2>폭발적으로 성장하는 시장, 아직 비어있는 보상 OS</h2>
-          <div className="highlight-grid">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Market</p>
+              <h2>폭발적으로 성장하는 시장, 아직 비어있는 보상 OS</h2>
+            </div>
+          </div>
+          <div className="stat-ribbon">
             {marketFacts.map((fact, idx) => (
               <motion.article
                 key={fact.label}
                 variants={fadeUp}
                 custom={idx * 0.2}
-                whileHover={{ scale: 1.02 }}
               >
                 <p>{fact.label}</p>
                 <strong>{fact.value}</strong>
@@ -443,16 +459,20 @@ export default function HomePage() {
         </motion.section>
 
         <motion.section
-          className="content-section glass-slab"
+          className="content-section"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-15%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Competitive Edge</p>
-          <h2>
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Competitive Edge</p>
+              <h2>
             진단에서 멈추는 기존 서비스와 달리, CarClame은 보상까지 닿습니다.
           </h2>
+            </div>
+          </div>
           <div className="comparison-grid">
             <div className="comparison-header">
               <span>구분</span>
@@ -483,48 +503,27 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-15%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Business Model</p>
-          <h2>B2C와 B2B가 맞물리는 구조</h2>
-          <div className="business-grid">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Business Model</p>
+              <h2>B2C와 B2B가 맞물리는 구조</h2>
+            </div>
+          </div>
+          <div className="list-columns two">
             {businessModels.map((model, idx) => (
-              <motion.article
+              <motion.div
                 key={model.segment}
+                className="column-item"
                 variants={scaleIn}
                 custom={idx * 0.2}
-                whileHover={{ translateY: -8 }}
               >
-                <h3>{model.segment}</h3>
+                <div className="column-title">{model.segment}</div>
                 <ul>
                   {model.items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
-              </motion.article>
-            ))}
-          </div>
-        </motion.section>
-
-        <motion.section
-          className="content-section gradient-border"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-15%" }}
-          variants={fadeUp}
-        >
-          <p className="eyebrow">Team</p>
-          <h2>세 명의 엔지니어가 각자 핵심 축을 책임집니다.</h2>
-          <div className="team-grid">
-            {teamResponsibilities.map((member, idx) => (
-              <motion.article
-                key={member.title}
-                variants={fadeUp}
-                custom={idx * 0.2}
-                whileHover={{ translateY: -5 }}
-              >
-                <p className="team-owner">{member.owner}</p>
-                <h3>{member.title}</h3>
-                <p>{member.body}</p>
-              </motion.article>
+              </motion.div>
             ))}
           </div>
         </motion.section>
@@ -536,17 +535,50 @@ export default function HomePage() {
           viewport={{ once: true, margin: "-15%" }}
           variants={fadeUp}
         >
-          <p className="eyebrow">Roadmap</p>
-          <h2>8주 안에 제휴 가능한 수준으로 성장</h2>
-          <div className="timeline simple">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Team</p>
+              <h2>세 명의 엔지니어가 각자 핵심 축을 책임집니다.</h2>
+            </div>
+          </div>
+          <div className="roster">
+            {teamResponsibilities.map((member, idx) => (
+              <motion.div
+                key={member.title}
+                className="roster-item"
+                variants={fadeUp}
+                custom={idx * 0.2}
+              >
+                <p className="team-owner">{member.owner}</p>
+                <h3>{member.title}</h3>
+                <p>{member.body}</p>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+
+        <motion.section
+          className="content-section"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-15%" }}
+          variants={fadeUp}
+        >
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Roadmap</p>
+              <h2>8주 안에 제휴 가능한 수준으로 성장</h2>
+            </div>
+          </div>
+          <div className="numbered-list subtle">
             {roadmap.map((item, index) => (
               <motion.div
                 key={item.phase}
-                className="timeline-step"
+                className="numbered-item"
                 variants={fadeUp}
                 custom={index * 0.2}
               >
-                <div className="timeline-index">{index + 1}</div>
+                <span className="numbered-index">{index + 1}</span>
                 <div>
                   <strong>{item.phase}</strong>
                   <p>{item.detail}</p>

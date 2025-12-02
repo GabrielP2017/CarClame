@@ -39,7 +39,6 @@ const heroPanelSteps = [
   { title: "Vision Review", desc: "침수/사고 흔적 스캔", badge: "2.2s" },
 ];
 
-
 const problemPoints = [
   {
     title: "사고 이력 확인의 한계",
@@ -288,14 +287,15 @@ export default function HomePage() {
                 >
                   확인에서 멈추지 말고, 바로 보상으로
                 </motion.p>
-                <motion.h1 variants={fadeUp} custom={1}>
-                  중고차 보상까지
-                  <br />
-                  원스톱으로 연결합니다.
-                </motion.h1>
+            <motion.h1 variants={fadeUp} custom={1} className="hero-title">
+              <span className="hero-title-sub">중고차 보상까지</span>
+              <br />
+              <span className="hero-title-main">원스톱</span>으로 연결
+            </motion.h1>
                 <motion.p className="hero-sub" variants={fadeUp} custom={2}>
-                  투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다. 진단
-                  결과가 곧바로 환불·보증·보험 청구로 이어지도록 설계했습니다.
+                  투명한 중고차 시장을 위한 AI 기반 원스톱 보상 솔루션입니다.
+                  진단 결과가 곧바로 환불·보증·보험 청구로 이어지도록
+                  설계했습니다.
                 </motion.p>
                 <motion.div className="hero-cta" variants={fadeUp} custom={3}>
                   <Link href="/analysis" className="btn primary lg glow">
@@ -359,7 +359,11 @@ export default function HomePage() {
             className="hero-orb hero-orb-one"
             aria-hidden="true"
             animate={{ y: [-10, 12, -10], rotate: [0, 8, 0] }}
-            transition={{ duration: 18, repeat: Infinity, repeatType: "mirror" }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              repeatType: "mirror",
+            }}
           />
           <motion.div
             className="hero-orb hero-orb-two"

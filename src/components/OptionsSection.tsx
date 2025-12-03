@@ -10,22 +10,48 @@ export default function OptionsSection({ apiResponse }: OptionsSectionProps) {
   const { liabilityInsurance, dealerRefund, personalInsurance } =
     apiResponse.remedies;
 
+  const liabilityTone =
+    liabilityInsurance?.verdict === "가능성 높음"
+      ? "positive"
+      : liabilityInsurance?.verdict?.includes("초과")
+      ? "danger"
+      : "muted";
+
+  const dealerTone =
+    dealerRefund?.verdict === "가능성 높음"
+      ? "positive"
+      : dealerRefund?.verdict === "기간 초과"
+      ? "danger"
+      : "muted";
+
+  const personalTone =
+    personalInsurance?.verdict === "손해 배상 권장" ||
+    personalInsurance?.verdict === "손해 배상 가능추정"
+      ? "positive"
+      : personalInsurance?.verdict === "증거 보완 필요" ||
+        personalInsurance?.verdict === "계약 확인 필요"
+      ? "warning"
+      : "muted";
+
   return (
-    <section className="card">
-      <h2 style={{ fontSize: "22px", fontWeight: "800" }}>구제 경로 분석</h2>
-      <p className="sub" style={{ marginBottom: "16px" }}>
-        입력하신 정보로 가능한 보상/환불 방법을 분석했습니다.
+    <section className="analysis-section">
+      <div className="analysis-section__head">
+        <div>
+          <p className="eyebrow">3단계</p>
+          <h2>구제 경로 분석</h2>
+        </div>
+        <span className="analysis-section__meta">보험 · 환불 · 소송 검토</span>
+      </div>
+      <p className="analysis-lead">
+        진단 결과를 근거로 가장 빠르게 접근할 수 있는 경로를 추천합니다.
       </p>
 
-      {/* 불일치 경고 플래그를 최상단으로 */}
       {apiResponse.flags && apiResponse.flags.length > 0 && (
-        <div style={{ marginBottom: "16px" }}>
-          <h3 style={{ fontSize: "15px", marginBottom: "8px" }}>
-            ⚠️ 검토 필요 사항
-          </h3>
+        <div className="analysis-flagline">
+          <span>주의</span>
           <div className="flags">
             {apiResponse.flags.map((flag: string, i: number) => (
-              <span key={i} className="flag">
+              <span key={flag + i} className="flag">
                 {flag}
               </span>
             ))}
@@ -33,238 +59,55 @@ export default function OptionsSection({ apiResponse }: OptionsSectionProps) {
         </div>
       )}
 
-      <div className="grid3">
-        {/* 성능·상태점검 책임보험 */}
-        <div className="panel">
-          <h3
-            style={{
-              fontSize: "16px",
-              fontWeight: "700",
-              marginBottom: "14px",
-            }}
-          >
-            🛡️ 성능보증보험
-          </h3>
-
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              style={{
-                fontSize: "14px",
-                color: "#737373",
-                marginBottom: "4px",
-              }}
-            >
-              적용 가능성
-            </div>
-            <div
-              style={{
-                fontSize: "18px",
-                fontWeight: "700",
-                color:
-                  liabilityInsurance?.verdict === "가능성 높음"
-                    ? "#16a34a"
-                    : liabilityInsurance?.verdict?.includes("초과")
-                    ? "#dc2626"
-                    : "#737373",
-              }}
-            >
-              {liabilityInsurance?.verdict || "확인 불가"}
-            </div>
+      <div className="analysis-columns analysis-columns--three">
+        <article className="analysis-column analysis-card">
+          <p className="analysis-label">성능·상태보증보험</p>
+          <h3>책임보험</h3>
+          <div className={`analysis-value ${liabilityTone}`}>
+            {liabilityInsurance?.verdict || "확인 불가"}
           </div>
-
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#737373",
-                marginBottom: "4px",
-              }}
-            >
-              판정 근거
-            </div>
-            <div
-              style={{ fontSize: "15px", lineHeight: "1.6", color: "#3f3f46" }}
-            >
-              {liabilityInsurance?.reason || "정보 부족"}
-            </div>
-          </div>
-
-          <p
-            className="hint"
-            style={{
-              fontSize: "12px",
-              color: "#737373",
-              marginTop: "12px",
-              paddingTop: "12px",
-              borderTop: "1px dashed #e6e6ef",
-            }}
-          >
-            주요 부품 하자 보상 (인도 후 30일 또는 2,000km 이내)
+          <p className="analysis-hint">적용 가능성</p>
+          <p className="analysis-body">
+            {liabilityInsurance?.reason || "근거 데이터 부족"}
           </p>
-        </div>
-
-        {/* 판매사 환불제 */}
-        <div className="panel">
-          <h3
-            style={{
-              fontSize: "16px",
-              fontWeight: "700",
-              marginBottom: "14px",
-            }}
-          >
-            🔄 판매사 환불제
-          </h3>
-
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#737373",
-                marginBottom: "4px",
-              }}
-            >
-              적용 가능성
-            </div>
-            <div
-              style={{
-                fontSize: "16px",
-                fontWeight: "700",
-                color:
-                  dealerRefund?.verdict === "가능성 높음"
-                    ? "#16a34a"
-                    : dealerRefund?.verdict === "기간 초과"
-                    ? "#dc2626"
-                    : "#737373",
-              }}
-            >
-              {dealerRefund?.verdict || "확인 불가"}
-            </div>
-          </div>
-
-          {dealerRefund?.brand && (
-            <div style={{ marginBottom: "12px" }}>
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "#737373",
-                  marginBottom: "4px",
-                }}
-              >
-                해당 정책
-              </div>
-              <div
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  color: "#3f3f46",
-                }}
-              >
-                {dealerRefund.brand} {dealerRefund.windowDays}일 환불제
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#737373",
-                marginBottom: "4px",
-              }}
-            >
-              판정 근거
-            </div>
-            <div
-              style={{ fontSize: "15px", lineHeight: "1.6", color: "#3f3f46" }}
-            >
-              {dealerRefund?.reason || "정보 부족"}
-            </div>
-          </div>
-
-          <p
-            className="hint"
-            style={{
-              fontSize: "12px",
-              color: "#737373",
-              marginTop: "12px",
-              paddingTop: "12px",
-              borderTop: "1px dashed #e6e6ef",
-            }}
-          >
-            K Car 3일 / 엔카 7일 / 침수 차량 90일 환불 정책 (판매사별 상이)
+          <p className="analysis-hint">
+            주요 부품 결함 (30일 또는 2,000km 이내) 기준
           </p>
-        </div>
+        </article>
 
-        {/* 개인 자동차보험 */}
-        <div className="panel">
-          <h3
-            style={{
-              fontSize: "16px",
-              fontWeight: "700",
-              marginBottom: "14px",
-            }}
-          >
-            📋 개인 자동차보험
-          </h3>
-
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#737373",
-                marginBottom: "4px",
-              }}
-            >
-              청구 가능성
-            </div>
-            <div
-              style={{
-                fontSize: "18px",
-                fontWeight: "700",
-                color:
-                  personalInsurance?.verdict === "청구 적극 권장" ||
-                  personalInsurance?.verdict === "청구 가능 추정"
-                    ? "#16a34a"
-                    : personalInsurance?.verdict === "증거 보완 필요" ||
-                      personalInsurance?.verdict === "특약 확인 필요"
-                    ? "#d97706"
-                    : "#737373",
-              }}
-            >
-              {personalInsurance?.verdict || "검토 필요"}
-            </div>
+        <article className="analysis-column analysis-card">
+          <p className="analysis-label">구매처 환불 정책</p>
+          <h3>딜러 / 플랫폼</h3>
+          <div className={`analysis-value ${dealerTone}`}>
+            {dealerRefund?.verdict || "확인 불가"}
           </div>
-
-          <div style={{ marginBottom: "12px" }}>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "#737373",
-                marginBottom: "4px",
-              }}
-            >
-              필요 서류
-            </div>
-            <div
-              style={{ fontSize: "15px", lineHeight: "1.6", color: "#3f3f46" }}
-            >
-              {personalInsurance?.reason || "보험사 확인 필요"}
-            </div>
-          </div>
-
-          <p
-            className="hint"
-            style={{
-              fontSize: "12px",
-              color: "#737373",
-              marginTop: "12px",
-              paddingTop: "12px",
-              borderTop: "1px dashed #e6e6ef",
-            }}
-          >
-            자차 담보 가입 시 사고 수리비 청구 가능 (가입 특약 확인 필요)
+          <p className="analysis-hint">
+            {dealerRefund?.brand
+              ? `${dealerRefund.brand} ${dealerRefund.windowDays}일`
+              : "브랜드 환불 정책 정보 부족"}
           </p>
-        </div>
+          <p className="analysis-body">
+            {dealerRefund?.reason || "추가 정보가 필요합니다."}
+          </p>
+          <p className="analysis-hint">
+            K Car 3일 / 엔카 7일 / 침수 90일 (유형별 차이)
+          </p>
+        </article>
+
+        <article className="analysis-column analysis-card">
+          <p className="analysis-label">개인 자동차 보험</p>
+          <h3>자차 / 특약</h3>
+          <div className={`analysis-value ${personalTone}`}>
+            {personalInsurance?.verdict || "검토 필요"}
+          </div>
+          <p className="analysis-hint">필요 서류 / 증거</p>
+          <p className="analysis-body">
+            {personalInsurance?.reason || "보험사 확인이 필요합니다."}
+          </p>
+          <p className="analysis-hint">
+            자차 특약 활성화 여부에 따라 진행 방식이 달라집니다.
+          </p>
+        </article>
       </div>
     </section>
   );

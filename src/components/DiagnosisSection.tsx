@@ -9,7 +9,7 @@ interface DiagnosisSectionProps {
 
 function getCategoryStyle(status: string): string {
   if (status === "정상") return "";
-  if (status === "점검요") return "status-warning";
+  if (status === "점검요망") return "status-warning";
   if (status === "불량") return "status-error";
   return "";
 }
@@ -17,18 +17,38 @@ function getCategoryStyle(status: string): string {
 export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
   if (!result) return null;
 
+  const riskFindings = result.photoFindings.filter(
+    (finding) =>
+      finding.includes("침수") ||
+      finding.includes("전손") ||
+      finding.includes("부식") ||
+      finding.includes("구제금")
+  );
+  const noteFindings = result.photoFindings.filter(
+    (finding) =>
+      finding.includes("참고") ||
+      finding.includes("기스") ||
+      finding.includes("도색")
+  );
+
   return (
-    <section className="card">
-      <h2 style={{ fontSize: "22px", fontWeight: "800" }}>자동 분석 결과</h2>
+    <section className="analysis-section">
+      <div className="analysis-section__head">
+        <div>
+          <p className="eyebrow">2단계</p>
+          <h2>자동 분석 결과</h2>
+        </div>
+        <span className="analysis-section__meta">
+          VIN {result.kahistory.vin}
+        </span>
+      </div>
 
       {result.flags && result.flags.length > 0 && (
-        <div style={{ marginBottom: "16px" }}>
-          <h3 style={{ fontSize: "15px", marginBottom: "8px" }}>
-            ⚠️ 검토 필요 사항
-          </h3>
+        <div className="analysis-flagline">
+          <span>검토 필요</span>
           <div className="flags">
             {result.flags.map((flag, i) => (
-              <span key={i} className="flag">
+              <span key={flag + i} className="flag">
                 {flag}
               </span>
             ))}
@@ -36,25 +56,14 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
         </div>
       )}
 
-      <div className="grid3">
-        <div className="kahi panel">
-          <h3 style={{ fontSize: "16px", fontWeight: "700" }}>
-            카히스토리(참고용)
-          </h3>
-          <div
-            style={{
-              background: "#fffbeb",
-              border: "1px solid #fcd34d",
-              borderRadius: "8px",
-              padding: "10px 12px",
-              marginBottom: "12px",
-              fontSize: "13px",
-              color: "#92400e",
-            }}
-          >
-            ⓘ 데모 버전: 카히스토리 API는 기업 제휴 필요
+      <div className="analysis-columns analysis-columns--three">
+        <article className="analysis-column analysis-card">
+          <p className="analysis-label">카히스토리</p>
+          <h3>사고 / 보험 이력</h3>
+          <div className="analysis-callout warning">
+            베타 버전: 카히스토리 API는 기업 제휴 필요
             <br />
-            대체 API 또는 기능 구현 예정
+            실시간 API 연동은 추후 계획입니다.
           </div>
           <div className="kv">
             <div className="row">
@@ -63,87 +72,47 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
             </div>
             <div className="row">
               <span>전손</span>
-              <strong>{result.kahistory.writtenOff ? "있음" : "없음"}</strong>
+              <strong>{result.kahistory.writtenOff ? "의심" : "없음"}</strong>
             </div>
             <div className="row">
               <span>도난</span>
-              <strong>{result.kahistory.theft ? "있음" : "없음"}</strong>
+              <strong>{result.kahistory.theft ? "의심" : "없음"}</strong>
             </div>
-            {result.kahistory.accidents.map((a, i) => (
-              <div key={i} className="row">
+            {result.kahistory.accidents.map((accident, i) => (
+              <div key={accident.date + i} className="row">
                 <span>사고 {i + 1}</span>
                 <strong>
-                  {a.type} / {a.date} / 보험금 {fmt(a.payout)}원
+                  {accident.type} / {accident.date} / 보험금
+                  {fmt(accident.payout)}원
                 </strong>
               </div>
             ))}
           </div>
-          <p
-            className="hint"
-            style={{ fontSize: "12px", color: "#737373", marginTop: "8px" }}
-          >
-            ※ 보험 처리된 사고 기록이며, 실제 사고 규모나 과실 비율은 포함되지
-            않습니다.
+          <p className="analysis-hint">
+            보험 처리 기반 사고 기록이며, 실제 사고 규모나 과실 비율은 포함되지
+            않았습니다.
           </p>
-        </div>
+        </article>
 
-        <div className="ocr panel">
-          <h3 style={{ fontSize: "16px", fontWeight: "700" }}>
-            성능기록부 분석
-          </h3>
-
+        <article className="analysis-column analysis-card">
+          <p className="analysis-label">성능점검 OCR</p>
+          <h3>카테고리 판정</h3>
           {result.ocr.confidence === "none" ? (
-            <div
-              style={{
-                background: "#fef2f2",
-                border: "2px solid #dc2626",
-                borderRadius: "8px",
-                padding: "16px",
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#dc2626",
-                fontWeight: "600",
-              }}
-            >
-              ⚠️ 이미지 업로드 필요
-              <br />
-              성능점검기록부 사진을 업로드하여 분석을 진행하세요
+            <div className="analysis-callout danger">
+              성능점검기록부 이미지가 필요합니다. 명확한 촬영본을 업로드해 주세요.
             </div>
           ) : result.ocr.confidence === "retry" ? (
-            <div
-              style={{
-                background: "#fef2f2",
-                border: "2px solid #dc2626",
-                borderRadius: "8px",
-                padding: "16px",
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#dc2626",
-                fontWeight: "600",
-              }}
-            >
-              ⚠️ 이미지 인식 실패
-              <br />
-              성능점검기록부 사진을 더 선명하게 다시 촬영하여 업로드하세요
+            <div className="analysis-callout danger">
+              이미지 인식에 실패했습니다. 원본이 선명한 이미지를 다시 업로드해
+              주세요.
             </div>
           ) : (
             <>
               {result.ocr.confidence === "low" && (
-                <div
-                  style={{
-                    background: "#fffbeb",
-                    border: "1px solid #fcd34d",
-                    borderRadius: "8px",
-                    padding: "8px 12px",
-                    marginBottom: "12px",
-                    fontSize: "13px",
-                    color: "#d97706",
-                  }}
-                >
-                  ⚠️ 인식 정확도 낮음: 아래 결과를 직접 확인하세요
+                <div className="analysis-callout warning">
+                  OCR 신뢰도가 낮습니다. 아래 결과를 직접 확인해 주세요.
                 </div>
               )}
-
               <div className="kv">
                 <div className="row">
                   <span>사고 이력 표기</span>
@@ -152,10 +121,9 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
                       color: result.ocr.noAccidentMarked
                         ? "#16a34a"
                         : "#dc2626",
-                      fontWeight: "700",
                     }}
                   >
-                    {result.ocr.noAccidentMarked ? "✓ 무사고" : "⚠ 사고 표기"}
+                    {result.ocr.noAccidentMarked ? "무사고 표기" : "사고 표기"}
                   </strong>
                 </div>
                 <div className="row">
@@ -175,7 +143,7 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
                   </strong>
                 </div>
                 <div className="row">
-                  <span>조향장치</span>
+                  <span>조향 장치</span>
                   <strong
                     className={getCategoryStyle(result.ocr.categories.steering)}
                   >
@@ -183,7 +151,7 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
                   </strong>
                 </div>
                 <div className="row">
-                  <span>제동장치</span>
+                  <span>제동 장치</span>
                   <strong
                     className={getCategoryStyle(result.ocr.categories.brake)}
                   >
@@ -191,7 +159,7 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
                   </strong>
                 </div>
                 <div className="row">
-                  <span>전기장치</span>
+                  <span>전기 장치</span>
                   <strong
                     className={getCategoryStyle(result.ocr.categories.electric)}
                   >
@@ -201,88 +169,43 @@ export default function DiagnosisSection({ result }: DiagnosisSectionProps) {
               </div>
             </>
           )}
-
-          <p
-            className="hint"
-            style={{ fontSize: "12px", color: "#737373", marginTop: "8px" }}
-          >
-            ※ 성능점검기록부에서 자동 추출한 정보입니다.
+          <p className="analysis-hint">
+            성능점검기록부에서 추출된 항목이며, 이미지 품질에 따라 편차가 있을
+            수 있습니다.
           </p>
-        </div>
+        </article>
 
-        <div className="photo panel">
-          <h3 style={{ fontSize: "16px", fontWeight: "700" }}>
-            사진 분석 결과
-          </h3>
-
-          <div style={{ marginBottom: "12px" }}>
-            <h4
-              style={{
-                fontSize: "14px",
-                margin: "8px 0 4px 0",
-                color: "#dc2626",
-                fontWeight: "600",
-              }}
-            >
-              🚨 중대 하자 (보험/환불 대상)
-            </h4>
-            <ul className="bullets" style={{ marginTop: "4px" }}>
-              {result.photoFindings.filter(
-                (f) =>
-                  f.includes("침수") ||
-                  f.includes("녹") ||
-                  f.includes("부식") ||
-                  f.includes("구제대상")
-              ).length > 0 ? (
-                result.photoFindings
-                  .filter(
-                    (f) =>
-                      f.includes("침수") ||
-                      f.includes("녹") ||
-                      f.includes("부식") ||
-                      f.includes("구제대상")
-                  )
-                  .map((finding, i) => (
-                    <li key={i}>{finding.replace("[구제대상]", "").trim()}</li>
-                  ))
+        <article className="analysis-column analysis-card">
+          <p className="analysis-label">비전 AI</p>
+          <div>
+            <span className="analysis-chip danger">위험 · 보상 대상</span>
+            <ul className="bullets">
+              {riskFindings.length > 0 ? (
+                riskFindings.map((finding, i) => (
+                  <li key={finding + i}>
+                    {finding.replace("[구제금]", "").trim()}
+                  </li>
+                ))
               ) : (
                 <li>해당 없음</li>
               )}
             </ul>
           </div>
-
           <div>
-            <h4
-              style={{
-                fontSize: "14px",
-                margin: "8px 0 4px 0",
-                color: "#737373",
-                fontWeight: "600",
-              }}
-            >
-              ℹ️ 참고 사항 (외관 하자)
-            </h4>
-            <ul className="bullets" style={{ marginTop: "4px" }}>
-              {result.photoFindings.filter(
-                (f) =>
-                  f.includes("참고") || f.includes("기스") || f.includes("도색")
-              ).length > 0 ? (
-                result.photoFindings
-                  .filter(
-                    (f) =>
-                      f.includes("참고") ||
-                      f.includes("기스") ||
-                      f.includes("도색")
-                  )
-                  .map((finding, i) => (
-                    <li key={i}>{finding.replace("[참고]", "").trim()}</li>
-                  ))
+            <span className="analysis-chip muted">참고 기록</span>
+            <ul className="bullets">
+              {noteFindings.length > 0 ? (
+                noteFindings.map((finding, i) => (
+                  <li key={finding + i}>
+                    {finding.replace("[참고]", "").trim()}
+                  </li>
+                ))
               ) : (
-                <li>특이사항 없음</li>
+                <li>표시할 참고 항목 없음</li>
               )}
             </ul>
           </div>
-        </div>
+        </article>
       </div>
     </section>
   );

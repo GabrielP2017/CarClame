@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "중고차 구제 패키저 | MVP",
+  title: "CarClame | VIN 기반 클레임 자동화",
   description:
-    "차량 번호/VIN과 구매일·주행거리만 입력하면, 불일치 탐지 → 환불/보증/보험 경로 → 원클릭 서류 생성까지 한 번에.",
+    "VIN과 계약서만 올리면 위험 진단, 규정 매칭, PDF 패키지까지 자동 구성되는 중고차 클레임 OS.",
 };
 
 export default function RootLayout({
